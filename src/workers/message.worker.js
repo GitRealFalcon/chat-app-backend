@@ -1,5 +1,5 @@
 import { Worker } from "bullmq";
-import { MESSAGE_QUEUE } from "../queues/message.queue";
+import { MESSAGE_QUEUE } from "../queues/message.queue.js";
 import bullMqConnection from "../config/bullMq.js";
 import { Message } from "../models/message.model.js";
 import { GroupMessage } from "../models/groupMessage.model.js";

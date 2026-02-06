@@ -1,4 +1,4 @@
-import { User } from "../../models/user.model";
+import { User } from "../../models/user.model.js";
 import ApiError from "../../utils/ApiError.js";
 import { redisClient } from "../../config/redis.js";
 

@@ -5,7 +5,7 @@ import {
   BULL_REDIS_CONFIG_PASSWORD,
   BULL_REDIS_CONFIG_PORT,
   BULL_REDIS_CONFIG_USERNAME,
-} from "./env";
+} from "./env.js";
 
 export const bullMqConnection = createClient({
   socket: {

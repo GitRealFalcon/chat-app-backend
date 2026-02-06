@@ -5,7 +5,7 @@ import {
   REDIS_CONFIG_PASSWORD,
   REDIS_CONFIG_PORT,
   REDIS_CONFIG_USERNAME,
-} from "./env";
+} from "./env.js";
 
 export const redisClient = createClient({
   socket: {

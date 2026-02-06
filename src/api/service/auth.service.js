@@ -1,4 +1,4 @@
-import { User } from "../../models/user.model";
+import { User } from "../../models/user.model.js";
 import ApiError from "../../utils/ApiError.js";
 
 const registerUser = async(email, password, name) => {

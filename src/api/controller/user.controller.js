@@ -1,6 +1,6 @@
-import ApiError from "../../utils/ApiError";
-import ApiResponse from "../../utils/ApiRespose";
-import asyncHandler from "../../utils/asyncHandler";
+import ApiError from "../../utils/ApiError.js";
+import ApiResponse from "../../utils/ApiRespose.js";
+import asyncHandler from "../../utils/asyncHandler.js";
 import userService from "../service/user.service.js";
 
 const getUserById = asyncHandler(async (req, res) => {

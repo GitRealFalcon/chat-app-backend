@@ -1,4 +1,4 @@
-import ApiError from "../../utils/ApiError";
+import ApiError from "../../utils/ApiError.js";
 import groupService from "../service/group.service.js";
 import asyncHandler from "../../utils/asyncHandler.js";
 import ApiResponse from "../../utils/ApiRespose.js";

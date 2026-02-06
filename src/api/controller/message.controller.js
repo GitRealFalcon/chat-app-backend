@@ -1,6 +1,6 @@
-import ApiResponse from "../../utils/ApiRespose";
-import messageService from "../services/message.service";
-import asyncHandler from "../../utils/asyncHandler";
+import ApiResponse from "../../utils/ApiRespose.js";
+import messageService from "../service/message.service.js";
+import asyncHandler from "../../utils/asyncHandler.js";
 
 const getDirectMessages = asyncHandler(async (req, res) => {
     const {userId} = req.params;

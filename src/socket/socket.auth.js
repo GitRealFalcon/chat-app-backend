@@ -1,5 +1,5 @@
-import { verifyAccessToken } from "../utils/jwt.service";
-import { User } from "../models/user.model";
+import { verifyAccessToken } from "../utils/jwt.service.js";
+import { User } from "../models/user.model.js";
 
 
 async function socketAuth(socket,next){

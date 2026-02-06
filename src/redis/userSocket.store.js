@@ -1,4 +1,4 @@
-import { redisClient } from "../config/redis";
+import { redisClient } from "../config/redis.js";
 
 const ONLINE_USERS_KEY = "online:users";
 const USER_SOCKETS_KEY = (userId)=> `user:sockets:${userId}`;
