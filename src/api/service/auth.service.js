@@ -1,7 +1,7 @@
 import { User } from "../../models/user.model.js";
 import ApiError from "../../utils/ApiError.js";
 
-const registerUser = async(email, password, name) => {
+const registerUser = async(name,email,password) => {
     const existingUser = await User.findOne({email});
     if(existingUser){
         throw new ApiError(400,"User already Exists");

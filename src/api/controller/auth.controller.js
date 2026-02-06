@@ -9,7 +9,7 @@ const register = asyncHandler(async (req,res)=>{
         throw new ApiError(400, "Name, email and password are required");
     }
 
-    const user = await authService.register(name,email,password);
+    const user = await authService.registerUser(name,email,password);
     res.status(201)
     .json(new ApiResponse(201, "User registered successfully",user));
 })
@@ -20,7 +20,7 @@ const login = asyncHandler(async(req,res)=>{
         throw new ApiError(400, "Email and password are required");
     }
 
-    const user = await authService.login(email,password);
+    const user = await authService.loginUser(email,password);
 
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
@@ -44,7 +44,7 @@ const login = asyncHandler(async(req,res)=>{
 
 const logout = asyncHandler(async(req,res)=>{
     const userId = req.user._id;
-    await authService.logout(userId);
+    await authService.logoutUser(userId);
     res.status(200)
     .clearCookie("refreshToken")
     .clearCookie("accessToken")
