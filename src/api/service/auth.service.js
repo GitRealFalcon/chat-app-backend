@@ -43,7 +43,7 @@ const getCurrentUser = async(userId)=>{
     return user;
 }
 
-export {
+export default{
     registerUser,
     loginUser,
     logoutUser,

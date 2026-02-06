@@ -89,7 +89,7 @@ const isMemberOfGroup = async (groupId, userId) => {
     return group.members.includes(userId);
 }
 
-export {
+export default{
   creatGroup,
   getGroupById,
   addMembersToGroup,

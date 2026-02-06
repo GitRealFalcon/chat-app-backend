@@ -33,5 +33,54 @@ const getGroupMessages = async (groupId, page = 1) => {
     return messages;
 }
 
+const sendDirectMessage = async (payload)=>{
+    const {senderId , receiverId, content, type} = payload;
+
+    if(!content.trim()){
+        throw new Error("Message content cannot be empty");
+    }
+
+    const message = {
+        chatType: "direct",
+        sender: senderId,
+        receiver: receiverId,
+        content,
+        type,
+        createdAt: new Date()
+    }
+
+    await messageQueue.add("presis-message", message)
+
+    return message;
+}
+
+const sendGroupMessage = async (payload) => {
+    const {senderId, groupId, content, type} = payload;
+
+    if(!content.trim()){
+        throw new Error("Message content cannot be empty");
+    }
+
+    const message = {
+        chatType: "group",
+        sender: senderId,
+        group: groupId,
+        content,
+        type,
+        createdAt: new Date()
+    }
+
+    await messageQueue.add("presis-message", message)
+
+    return message;
+}
+
+export default {
+    getDirectMessages,
+    getGroupMessages,
+    sendDirectMessage,
+    sendGroupMessage
+}
+
 
 

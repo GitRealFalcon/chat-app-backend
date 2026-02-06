@@ -23,7 +23,7 @@ const getOnlineUsers = async () => {
     return onlineUsers;
 }
 
-export {
+export default{
     getUserById,
     searchUsersByName,
     getOnlineUsers
