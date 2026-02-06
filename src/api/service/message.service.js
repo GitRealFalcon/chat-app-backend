@@ -1,7 +1,7 @@
 import {Message} from "../../models/message.model.js";
 import {GroupMessage} from "../../models/groupMessage.model.js"
 import { redisClient } from "../../config/redis.js";
-import messageQueue from "../../queues/message.queue.js";
+import {messageQueue} from "../../queues/message.queue.js";
 
 const PAZE_SIZE = 20 ;
 const getDirectMessages = async (userId, peerId, page = 1) => {

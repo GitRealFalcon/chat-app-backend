@@ -1,4 +1,4 @@
-import groupController from '../controllers/group.controller.js';
+import groupController from "../controller/group.controller.js"
 import { Router } from 'express';
 import authMiddleware from '../middleware/auth.middleware.js';
 
