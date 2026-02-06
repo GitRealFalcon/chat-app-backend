@@ -41,11 +41,10 @@ const sendDirectMessage = async (payload)=>{
     }
 
     const message = {
-        chatType: "direct",
+        messageType: "direct",
         sender: senderId,
         receiver: receiverId,
         content,
-        type,
         createdAt: new Date()
     }
 
@@ -62,11 +61,10 @@ const sendGroupMessage = async (payload) => {
     }
 
     const message = {
-        chatType: "group",
+        messageType: "group",
         sender: senderId,
         group: groupId,
         content,
-        type,
         createdAt: new Date()
     }
 
