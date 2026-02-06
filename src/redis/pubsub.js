@@ -1,0 +1,80 @@
+import { redisPub, redisSub } from "../config/redis.js";
+import { REDIS_CHANNELS } from "../constants/redis.channels.js";
+import socketEvents from "../constants/socket.events.js";
+import { getUserSockets } from "./userSocket.store.js";
+
+export const publishDirectMessage = async (payload) => {
+  await redisPub.publish(
+    REDIS_CHANNELS.DIRECT_MESSAGE,
+    JSON.stringify(payload),
+  );
+};
+
+export const publishGroupMessage = async (payload) => {
+  await redisPub.publish(REDIS_CHANNELS.GROUP_MESSAGE, JSON.stringify(payload));
+};
+
+export const publishUserStatus = async (payload) => {
+  await redisPub.publish(REDIS_CHANNELS.USER_STATUS, JSON.stringify(payload));
+};
+
+export const publshTypingStatus = async (payload)=>{
+    await redisPub.publish(REDIS_CHANNELS.TYPING_STATUS,JSON.stringify(payload))
+}
+
+export const initRedisSubscriber = (io) => {
+  redisSub.subscribe(REDIS_CHANNELS.DIRECT_MESSAGE, async (message) => {
+    try {
+      const payload = JSON.parse(message);
+      const { receiverId } = payload;
+      const receverSockets = await getUserSockets(receiverId);
+
+      receverSockets.forEach((socket) => {
+        io.to(socket).emit(socketEvents.DIRECT_MESSAGE, payload);
+      });
+    } catch (error) {
+      console.error("❌ Redis DIRECT_MESSAGE error:", err);
+    }
+  });
+
+  redisSub.subscribe(REDIS_CHANNELS.GROUP_MESSAGE, (message) => {
+    try {
+      const payload = JSON.parse(message);
+      const { groupId } = payload;
+
+      io.to(`room:${groupId}`).emit(socketEvents.GROUP_MESSAGE, payload);
+    } catch (error) {
+      console.error("❌ Redis GROUP_MESSAGE error:", err);
+    }
+  });
+
+  redisSub.subscribe(REDIS_CHANNELS.USER_STATUS, (message) => {
+    try {
+      const payload = JSON.parse(message);
+      const { status } = payload;
+      if (status === "offline") {
+        io.emit(socketEvents.USER_OFFLINE, payload);
+      } else {
+        io.emit(socketEvents.USER_ONLINE, payload);
+      }
+    } catch (error) {
+      console.error("❌ Redis USER_STATUS error:", err);
+    }
+  });
+
+  redisSub.subscribe(REDIS_CHANNELS.TYPING_STATUS,(message)=>{
+    try {
+        const payload = JSON.parse(message)
+        const {status} = payload
+        if(status === "stop"){
+            io.emit(socketEvents.TYPING_STOP,payload)
+        }else{
+            io.emit(socketEvents.TYPING_START,payload)
+        }
+    } catch (error) {
+        console.error("❌ Redis TYPING_STATUS error:", err);
+    }
+  })
+
+  console.log("✅ Redis Pub/Sub subscribers initialized");
+};

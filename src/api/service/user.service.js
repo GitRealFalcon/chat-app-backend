@@ -1,6 +1,7 @@
 import { User } from "../../models/user.model.js";
 import ApiError from "../../utils/ApiError.js";
 import { redisClient } from "../../config/redis.js";
+import { getOnlineUsers } from "../../redis/userSocket.store.js";
 
 const getUserById = async (userId) => {
     const user = await User.findById(userId).select("-password -refreshToken");
@@ -19,7 +20,7 @@ const searchUsersByName = async (name) => {
 }
 
 const getOnlineUsers = async () => {
-    const onlineUsers =  await redisClient.sMembers("online:users");
+    const onlineUsers =  await getOnlineUsers()
     return onlineUsers;
 }
 

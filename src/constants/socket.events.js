@@ -1,4 +1,4 @@
-export const SOCKET_EVENTS = {
+export default  {
   CONNECTION: "connection",
   DISCONNECT: "disconnect",
 

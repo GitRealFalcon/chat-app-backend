@@ -15,7 +15,7 @@ async function socketAuth(socket,next){
         if(!decoded){
             return next(new Error("Invalid Token"));
         }
-        const user = await User.findById(decoded.id).select("-password -refreshToken");
+        const user = await User.findById(decoded._id).select("-password -refreshToken");
         if(!user){
             return next(new Error("User not found"));
         }
