@@ -15,8 +15,16 @@ const searchUsersByName = asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse(200, "Users fetched successfully", users));
 })
 
+const getOnlineUsers = asyncHandler(async (req,res)=>{
+   const  onlineUsers = userService.getOnlineUsers()
+
+   res.status(200)
+   .json(new ApiResponse(200,"fetch online user sucssessfull", onlineUsers))
+})
+
 
 export default{
     getUserById,
     searchUsersByName,
+    getOnlineUsers
 }

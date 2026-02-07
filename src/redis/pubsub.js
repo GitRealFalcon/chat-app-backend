@@ -2,16 +2,19 @@ import { redisPub, redisSub } from "../config/redis.js";
 import { REDIS_CHANNELS } from "../constants/redis.channels.js";
 import socketEvents from "../constants/socket.events.js";
 import { getUserSockets } from "./userSocket.store.js";
+import messageService from "../api/service/message.service.js";
 
 export const publishDirectMessage = async (payload) => {
   await redisPub.publish(
     REDIS_CHANNELS.DIRECT_MESSAGE,
     JSON.stringify(payload),
   );
+  await messageService.saveDirectMessage(payload)
 };
 
 export const publishGroupMessage = async (payload) => {
   await redisPub.publish(REDIS_CHANNELS.GROUP_MESSAGE, JSON.stringify(payload));
+  await messageService.saveGroupMessage(payload)
 };
 
 export const publishUserStatus = async (payload) => {

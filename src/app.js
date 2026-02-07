@@ -4,8 +4,12 @@ import authRoutes from "./api/routes/auth.routes.js"
 import groupRoutes from "./api/routes/group.routes.js"
 import messageRoutes from "./api/routes/message.routes.js"
 import userRoutes from "./api/routes/user.routes.js"
+import cors from "cors"
 
 const app = express();
+app.use(cors({
+    origin: "*"
+}))
 app.use(express.json());
 app.use(express.urlencoded({extended:true,limit:"30mb"}));
 app.use(coockeeParser());

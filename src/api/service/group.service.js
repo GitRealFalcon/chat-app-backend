@@ -1,7 +1,8 @@
 import { Group } from "../../models/group.model.js";
 import ApiError from "../../utils/ApiError.js";
+import mongoose from "mongoose";
 
-const creatGroup = async (name, memberIds, adminIds) => {
+const createGroup = async (name, memberIds, adminIds) => {
   const existingGroup = await Group.findOne({ name });
   if (existingGroup) {
     throw new ApiError(400, "Group already exists");
@@ -18,8 +19,9 @@ const creatGroup = async (name, memberIds, adminIds) => {
 };
 
 const getGroupById = async (groupId) => {
+ 
   const group = await Group.aggregate([
-    { $match: { _id: groupId } },
+    { $match: { _id: new mongoose.Types.ObjectId(groupId) } },
     {
       $lookup: {
         from: "users",
@@ -48,11 +50,12 @@ const getGroupById = async (groupId) => {
     },
     { $project:{
         name:1,
-        membersDetails:1,
+        memberDetails:1,
         adminDetails:1,
     }}
   ]);
 
+  
     if (!group || group.length === 0) {
         throw new ApiError(404, "Group not found");
     }
@@ -82,6 +85,9 @@ const removeMembersFromGroup = async (groupId, memberIds)=>{
 }
 
 const isMemberOfGroup = async (groupId, userId) => {
+   
+    console.log(groupId);
+    
     const group = await Group.findById(groupId);
     if(!group){
         throw new ApiError(404,"Group not found");
@@ -90,7 +96,7 @@ const isMemberOfGroup = async (groupId, userId) => {
 }
 
 export default{
-  creatGroup,
+  createGroup,
   getGroupById,
   addMembersToGroup,
   removeMembersFromGroup,

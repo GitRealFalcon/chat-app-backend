@@ -11,7 +11,8 @@ export const initSocket = (httpServer)=>{
             credentials:true,
         }
     })
-
+   
+    
     io.use(socketAuth)
     registerSocketEvents(io);
 

@@ -33,19 +33,19 @@ const getGroupMessages = async (groupId, page = 1) => {
     return messages;
 }
 
-const sendDirectMessage = async (payload)=>{
-    const {senderId , receiverId, content, type} = payload;
+const saveDirectMessage = async (payload)=>{
+    const {senderId , receiverId, content, type,createdAt} = payload;
 
     if(!content.trim()){
         throw new Error("Message content cannot be empty");
     }
 
     const message = {
-        messageType: "direct",
+        messageType: type,
         sender: senderId,
         receiver: receiverId,
         content,
-        createdAt: new Date()
+        createdAt
     }
 
     await messageQueue.add("presis-message", message)
@@ -53,19 +53,19 @@ const sendDirectMessage = async (payload)=>{
     return message;
 }
 
-const sendGroupMessage = async (payload) => {
-    const {senderId, groupId, content, type} = payload;
+const saveGroupMessage = async (payload) => {
+    const {senderId, groupId, content, type,createdAt} = payload;
 
     if(!content.trim()){
         throw new Error("Message content cannot be empty");
     }
 
     const message = {
-        messageType: "group",
+        messageType: type,
         sender: senderId,
         group: groupId,
         content,
-        createdAt: new Date()
+        createdAt
     }
 
     await messageQueue.add("presis-message", message)
@@ -76,8 +76,8 @@ const sendGroupMessage = async (payload) => {
 export default {
     getDirectMessages,
     getGroupMessages,
-    sendDirectMessage,
-    sendGroupMessage
+    saveDirectMessage,
+    saveGroupMessage
 }
 
 
