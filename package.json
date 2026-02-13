@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "worker": "nodemon src/workers/message.worker.js"
   },
   "author": "Mohd Naeem",
   "license": "ISC",
@@ -14,6 +15,7 @@
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.2",
     "bullmq": "^5.67.2",
+    "cookie": "^1.1.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.2.4",

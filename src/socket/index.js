@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import {socketAuth} from "./socket.auth.js"
 import { registerSocketEvents } from "./socket.event.js";
+import { initRedisSubscriber } from "../redis/pubsub.js";
 
 
 export const initSocket = (httpServer)=>{
@@ -15,6 +16,7 @@ export const initSocket = (httpServer)=>{
     
     io.use(socketAuth)
     registerSocketEvents(io);
+    initRedisSubscriber(io)
 
     return io;
 }

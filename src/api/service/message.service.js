@@ -34,38 +34,38 @@ const getGroupMessages = async (groupId, page = 1) => {
 }
 
 const saveDirectMessage = async (payload)=>{
-    const {senderId , receiverId, content, type,createdAt} = payload;
+    const {sender , receiver, text, type,ts} = payload;
 
-    if(!content.trim()){
+    if(!text.trim()){
         throw new Error("Message content cannot be empty");
     }
 
     const message = {
-        messageType: type,
-        sender: senderId,
-        receiver: receiverId,
-        content,
-        createdAt
+        sender,
+        receiver,
+        text,
+        type,
+        ts
     }
 
-    await messageQueue.add("presis-message", message)
-
+   const job = await messageQueue.add("presis-message", message)
+   
     return message;
 }
 
 const saveGroupMessage = async (payload) => {
-    const {senderId, groupId, content, type,createdAt} = payload;
+    const {sender, group, text, type,ts} = payload;
 
-    if(!content.trim()){
+    if(!text.trim()){
         throw new Error("Message content cannot be empty");
     }
 
     const message = {
-        messageType: type,
-        sender: senderId,
-        group: groupId,
-        content,
-        createdAt
+        type,
+        sender,
+        group,
+        text,
+        ts
     }
 
     await messageQueue.add("presis-message", message)

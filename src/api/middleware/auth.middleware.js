@@ -26,6 +26,11 @@ const verifyToken = asyncHandler(async (req,res,next)=>{
         req.user = user;
         next();
     } catch (error) {
+        if (error.name === "TokenExpiredError") {
+            
+            throw new ApiError(401, "ACCESS_TOKEN_EXPIRED");
+        }
+        
         throw new ApiError(401, error.message || "Invalid Access Token");
     }
 })

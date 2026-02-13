@@ -1,8 +1,9 @@
 import { Group } from "../../models/group.model.js";
+import { User } from "../../models/user.model.js";
 import ApiError from "../../utils/ApiError.js";
 import mongoose from "mongoose";
 
-const createGroup = async (name, memberIds, adminIds) => {
+const createGroup = async (name, memberIds, adminIds,createdAt) => {
   const existingGroup = await Group.findOne({ name });
   if (existingGroup) {
     throw new ApiError(400, "Group already exists");
@@ -12,16 +13,24 @@ const createGroup = async (name, memberIds, adminIds) => {
     name,
     members: memberIds,
     admins: adminIds,
-    createdAt: Date.now(),
+    createdAt
   });
   await newGroup.save();
   return newGroup;
 };
 
-const getGroupById = async (groupId) => {
+const getGroupById = async (groupIds) => {
+
+  const validGroupIds = groupIds.map(id => new mongoose.Types.ObjectId(id))
  
   const group = await Group.aggregate([
-    { $match: { _id: new mongoose.Types.ObjectId(groupId) } },
+    {
+       $match:{ 
+        _id:{
+          $in: validGroupIds
+         }
+        }
+       },
     {
       $lookup: {
         from: "users",
@@ -55,7 +64,6 @@ const getGroupById = async (groupId) => {
     }}
   ]);
 
-  
     if (!group || group.length === 0) {
         throw new ApiError(404, "Group not found");
     }
@@ -68,9 +76,13 @@ const addMembersToGroup = async (groupId, memberIds)=>{
     if(!group){
         throw new ApiError(404,"Group not found");
     }
-
+ 
     group.members.push(...memberIds);
     await group.save();
+   await User.updateMany(
+    {_id:{$in:memberIds}},
+    {$addToSet:{joinedGroup:groupId}}
+   )
     return group;
 }
 
@@ -85,8 +97,6 @@ const removeMembersFromGroup = async (groupId, memberIds)=>{
 }
 
 const isMemberOfGroup = async (groupId, userId) => {
-   
-    console.log(groupId);
     
     const group = await Group.findById(groupId);
     if(!group){

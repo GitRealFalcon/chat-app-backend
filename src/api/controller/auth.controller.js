@@ -3,6 +3,7 @@ import authService from "../service/auth.service.js";
 import ApiError from "../../utils/ApiError.js";
 import ApiResponse  from "../../utils/ApiRespose.js";
 
+
 const register = asyncHandler(async (req,res)=>{
     const {name,email,password} = req.body;
     if(!name || !email || !password){
@@ -20,25 +21,26 @@ const login = asyncHandler(async(req,res)=>{
         throw new ApiError(400, "Email and password are required");
     }
 
-    const user = await authService.loginUser(email,password);
+    const {isValidUser,user} = await authService.loginUser(email,password);
 
-    const accessToken = user.generateAccessToken();
-    const refreshToken = user.generateRefreshToken();
+    const accessToken = isValidUser.generateAccessToken();
+    const refreshToken = isValidUser.generateRefreshToken();
+    isValidUser.refreshToken = refreshToken
+    isValidUser.save()
+
 
     res.status(200)
     .cookie("refreshToken", refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000
+        secure: false,
+        sameSite: "lax",
     })
     .cookie("accessToken", accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 15 * 60 * 1000
+        secure: false,
+       sameSite: "lax",
     })
-    .json(new ApiResponse(200, "Login successful", user));
+    .json(new ApiResponse(200, "Login successful", {user,accessToken}));
 
 })
 
@@ -58,9 +60,31 @@ const Me = asyncHandler(async (req,res)=>{
     .json(new ApiResponse(200, "Current user retrieved successfully", user));
 })
 
+const refreshToken = asyncHandler(async(req,res)=>{
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+        throw new ApiError(401, "No refresh Token")
+    }
+
+    const accessToken = await authService.createAccessToken(refreshToken)
+
+ res.status(200) .cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: false,
+       sameSite: "lax",
+    }).json({
+  success: true
+});
+
+
+})
+
+
 export default {
     register,
     login,
     logout,
-    Me
+    Me,
+    refreshToken
 }

@@ -10,6 +10,6 @@ DBConnect()
 const httpServer = http.createServer(app);
 const io =initSocket(httpServer)
 
-httpServer.listen(9000,()=>{
+httpServer.listen(8000,()=>{
     console.log("✅ Server is running on port 8000");
 })

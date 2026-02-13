@@ -5,15 +5,15 @@ const groupMessageSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
     },
-    content: {
+    text: {
         type: String,
         required: true,
     },
     group: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Group",
+        ref: "Group", 
     },
-    createdAt: {
+    ts: {
         type: Date,
         default: Date.now,
     },

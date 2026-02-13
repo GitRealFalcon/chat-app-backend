@@ -11,13 +11,13 @@ const getUserById = asyncHandler(async (req, res) => {
 
 const searchUsersByName = asyncHandler(async (req, res) => {
     const name = req.query.name;
+    
     const users = await userService.searchUsersByName(name);
     res.status(200).json(new ApiResponse(200, "Users fetched successfully", users));
 })
 
 const getOnlineUsers = asyncHandler(async (req,res)=>{
-   const  onlineUsers = userService.getOnlineUsers()
-
+   const  onlineUsers = await userService.getOnlineUsers()
    res.status(200)
    .json(new ApiResponse(200,"fetch online user sucssessfull", onlineUsers))
 })

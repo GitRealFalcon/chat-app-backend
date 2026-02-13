@@ -18,6 +18,18 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  contacts:[
+    {
+      type:mongoose.Types.ObjectId,
+      ref:"User"
+    }
+  ],
+  joinedGroup:[
+    {
+        type: mongoose.Types.ObjectId,
+        ref:"Group"
+    }
+  ],
   refreshToken: {
     type: String,
   },

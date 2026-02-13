@@ -8,6 +8,6 @@ router.post('/', authMiddleware, groupController.createGroup);
 router.get('/:groupId', authMiddleware, groupController.getGroupById);
 router.post('/:groupId/members', authMiddleware, groupController.addMembersToGroup);
 router.delete('/:groupId/members', authMiddleware, groupController.removeMembersFromGroup);
-router.post('/:groupId/isMember', authMiddleware, groupController.isMemberOfGroup);
+router.get('/:groupId/isMember', authMiddleware, groupController.isMemberOfGroup);
 
 export default router;

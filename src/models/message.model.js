@@ -9,7 +9,7 @@ const messageSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
     },
-    content: {
+    text: { 
         type: String,
         required: true,
     },
@@ -18,7 +18,7 @@ const messageSchema = new mongoose.Schema({
         enum: ["sent", "delivered", "read"],
         default: "sent",
     },
-    createdAt: {
+    ts: {
         type: Date,
         default: Date.now,
     },
