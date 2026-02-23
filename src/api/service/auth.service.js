@@ -29,20 +29,20 @@ const loginUser = async (email, password) => {
     {$match:{_id:isValidUser._id}},
      {
       $lookup: {
-        from: "Users",
+        from: "users",
         foreignField: "_id",
-        localField: "contacts",
-        as: "Contacts",
+        localField: "chats",
+        as: "Chats",
         pipeline: [
           {
-            $unset: ["password", "refreshToken", "contacts", "joinedGroup"],
+            $unset: ["password", "refreshToken", "chats", "joinedGroup"],
           },
         ],
       },
     },
     {
       $lookup: {
-        from: "Groups",
+        from: "groups",
         foreignField: "_id",
         localField: "joinedGroup",
         as: "JoinedGroups",
@@ -57,7 +57,7 @@ const loginUser = async (email, password) => {
       $project: {
         name: 1,
         email: 1,
-        Contacts: 1,
+        Chats: 1,
         JoinedGroups: 1,
       },
     },
@@ -83,20 +83,20 @@ const getCurrentUser = async (userId) => {
     { $match: { _id: new mongoose.Types.ObjectId(userId) } },
     {
       $lookup: {
-        from: "Users",
+        from: "users",
         foreignField: "_id",
-        localField: "contacts",
-        as: "Contacts",
+        localField: "chats",
+        as: "Chats",
         pipeline: [
           {
-            $unset: ["password", "refreshToken", "contacts", "joinedGroup"],
+            $unset: ["password", "refreshToken", "chats", "joinedGroup"],
           },
         ],
       },
     },
     {
       $lookup: {
-        from: "Groups",
+        from: "groups",
         foreignField: "_id",
         localField: "joinedGroup",
         as: "JoinedGroups",
@@ -111,7 +111,7 @@ const getCurrentUser = async (userId) => {
       $project: {
         name: 1,
         email: 1,
-        Contacts: 1,
+        Chats: 1,
         JoinedGroups: 1,
       },
     },

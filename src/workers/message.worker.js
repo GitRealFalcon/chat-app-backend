@@ -13,7 +13,7 @@ const worker = new Worker(
   async (job) => {
     
     const { type, sender, text, receiver, group, ts } = job.data;
-
+    
     if (type === "direct") {
       return await Message.create({
         sender,

@@ -8,6 +8,7 @@ export default (io,socket) => {
     sender: payload.sender,
     receiver: payload.receiver,  // 🔥 VERY IMPORTANT
     text: payload.text,
+    type: "direct",
     ts: payload.ts
   }
         await publishDirectMessage(message)

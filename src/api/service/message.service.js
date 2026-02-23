@@ -13,7 +13,7 @@ const getDirectMessages = async (userId, peerId, page = 1) => {
             {sender: peerId, receiver: userId}
         ],
         
-    }).sort({ createdAt: -1 })
+    })
     .skip(skip)
     .limit(PAZE_SIZE)
     .lean();
@@ -47,6 +47,7 @@ const saveDirectMessage = async (payload)=>{
         type,
         ts
     }
+    
 
    const job = await messageQueue.add("presis-message", message)
    

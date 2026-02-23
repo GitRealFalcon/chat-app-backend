@@ -8,5 +8,6 @@ const router = Router();
 router.get("/:userId/user", authMiddleware, userController.getUserById);
 router.get("/search", authMiddleware, userController.searchUsersByName);
 router.get("/onlineUser",authMiddleware,userController.getOnlineUsers)
+router.patch("/add",authMiddleware,userController.addContact)
 
 export default router;

@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unque: true,
+    unique: true,
     trim: true,
     lowercase: true,
   },
@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  contacts:[
+  chats :[
     {
       type:mongoose.Types.ObjectId,
       ref:"User"

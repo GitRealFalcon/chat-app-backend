@@ -13,9 +13,7 @@ const createGroup = asyncHandler(async (req,res)=>{
 })
 
 const getGroupById = asyncHandler(async (req,res)=>{
-    const {groupId} = req.body;
-    console.log(groupId);
-    
+    const {groupId} = req.body;    
     const group = await groupService.getGroupById(groupId);
     res.status(200).json(new ApiResponse(200,"Group fetched successfully",group));
 })

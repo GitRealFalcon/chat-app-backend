@@ -27,29 +27,27 @@ export const publshTypingStatus = async (payload) => {
 
 export const initRedisSubscriber = (io) => {
   redisSub.subscribe(REDIS_CHANNELS.DIRECT_MESSAGE, async (message) => {
-  try {
-    const payload = JSON.parse(message);
+    try {
+      const payload = JSON.parse(message);
 
-    const { sender, receiver } = payload;
+      const { sender, receiver } = payload;
 
-    const senderSockets = await getUserSockets(sender);
-    const receiverSockets = await getUserSockets(receiver);
+      const senderSockets = await getUserSockets(sender);
+      const receiverSockets = await getUserSockets(receiver);
 
-    // Emit to sender
-    senderSockets.forEach((socketId) => {
-      io.to(socketId).emit(socketEvents.DIRECT_MESSAGE, payload);
-    });
+      // Emit to sender
+      senderSockets.forEach((socketId) => {
+        io.to(socketId).emit(socketEvents.DIRECT_MESSAGE, payload);
+      });
 
-    // Emit to receiver
-    receiverSockets.forEach((socketId) => {
-      io.to(socketId).emit(socketEvents.DIRECT_MESSAGE, payload);
-    });
-
-  } catch (error) {
-    console.error("❌ Redis DIRECT_MESSAGE error:", error);
-  }
-});
-
+      // Emit to receiver
+      receiverSockets.forEach((socketId) => {
+        io.to(socketId).emit(socketEvents.DIRECT_MESSAGE, payload);
+      });
+    } catch (error) {
+      console.error("❌ Redis DIRECT_MESSAGE error:", error);
+    }
+  });
 
   redisSub.subscribe(REDIS_CHANNELS.GROUP_MESSAGE, (message) => {
     try {
@@ -77,31 +75,27 @@ export const initRedisSubscriber = (io) => {
     }
   });
 
-redisSub.subscribe(REDIS_CHANNELS.TYPING_STATUS, async (message) => {
-  try {
-    const payload = JSON.parse(message)
-    const { type, userId, chatId, chatType } = payload
+  redisSub.subscribe(REDIS_CHANNELS.TYPING_STATUS, async (message) => {
+    try {
+      const payload = JSON.parse(message);
+      const { type, userId, chatId, chatType } = payload;
 
-    if (chatType === "direct") {
+      if (chatType === "direct") {
+        // chatId is receiver in direct chat
+        const receiverSockets = await getUserSockets(chatId);
 
-      // chatId is receiver in direct chat
-      const receiverSockets = await getUserSockets(chatId)
+        receiverSockets.forEach((socketId) => {
+          io.to(socketId).emit(type, payload);
+        });
+      }
 
-      receiverSockets.forEach((socketId) => {
-        io.to(socketId).emit(type, payload)
-      })
+      if (chatType === "group") {
+        io.to(`group:${chatId}`).emit(type, payload);
+      }
+    } catch (err) {
+      console.error("Typing Redis error:", err);
     }
-
-    if (chatType === "group") {
-      io.to(`group:${chatId}`).emit(type, payload)
-    }
-
-  } catch (err) {
-    console.error("Typing Redis error:", err)
-  }
-})
-
-
+  });
 
   console.log("✅ Redis Pub/Sub subscribers initialized");
 };
