@@ -14,8 +14,6 @@ This service exposes REST APIs and uses Socket.IO for live messaging.
 - **Socket.IO** – real‑time communication
 - **BullMQ** – background jobs/queues
 - **JWT** – authentication
-- **Winston** – logging
-- **Jest / Supertest** – (planned) tests
 
 ---
 
