@@ -32,8 +32,22 @@ This service exposes REST APIs and uses Socket.IO for live messaging.
 
 ---
 
-## 📁 Project Structure
+## Project Architecture Diagram
+```
+Client (React)
+   ↓
+REST API (Node.js + Express)
+   ↓
+MongoDB
+   ↓
+Redis Pub/Sub
+   ↓
+Socket.io real-time server
+```
+---
 
+## 📁 Project Structure
+```
 ├── src/
 │ ├── api/
 │ │ ├── controller/ – route handlers
@@ -51,7 +65,7 @@ This service exposes REST APIs and uses Socket.IO for live messaging.
 │ └── workers/ – background workers
 ├── package.json
 └── README.md
-
+```
 ---
 
 ## 🛠️ Available Scripts
