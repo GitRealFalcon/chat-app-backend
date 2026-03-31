@@ -8,7 +8,7 @@ import cors from "cors"
 
 const app = express();
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173","https://chat-app-backend-4vgu.onrender.com"],
     credentials:true
 }))
 app.use(express.json());
