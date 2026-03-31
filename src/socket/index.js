@@ -6,7 +6,7 @@ import { initRedisSubscriber } from "../redis/pubsub.js";
 export const initSocket = (httpServer) => {
   const io = new Server(httpServer, {
     cors: {
-      origin: ["http://localhost:5173","https://chat-app-backend-4vgu.onrender.com"],
+      origin: ["http://localhost:5173","https://chat-application-frontend-woad.vercel.app"],
       methods: ["GET", "POST"],
       credentials: true,
     },
