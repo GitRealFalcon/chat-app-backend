@@ -22,7 +22,6 @@ export const getUserSockets = async (userId) => {
   return await redisClient.sMembers(`user:sockets:${userId}`);
 };
 
-export const getRedisOnlineUsers = async () => {
-  
+export const getRedisOnlineUsers = async () => { 
   return await redisClient.sMembers(ONLINE_USERS_KEY);
 };

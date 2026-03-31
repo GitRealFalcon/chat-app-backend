@@ -5,9 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/index.js",
-    "worker": "nodemon src/workers/message.worker.js"
+    "start": "node src/index.js",
+    "worker": "node src/workers/message.worker.js",
+    "dev": "nodemon src/index.js"
   },
   "author": "Mohd Naeem",
   "license": "ISC",
