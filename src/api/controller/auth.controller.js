@@ -3,6 +3,8 @@ import authService from "../service/auth.service.js";
 import ApiError from "../../utils/ApiError.js";
 import ApiResponse from "../../utils/ApiRespose.js";
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 const register = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
   if (!name || !email || !password) {
