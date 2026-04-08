@@ -9,11 +9,9 @@ const register = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Name, email and password are required");
   }
 
-  const user = await authService.registerUser(name, email, password)
-  
-  res
-    .status(201)
-    .json(new ApiResponse(201, "User registered successfully"));
+  const user = await authService.registerUser(name, email, password);
+
+  res.status(201).json(new ApiResponse(201, "User registered successfully"));
 });
 
 const login = asyncHandler(async (req, res) => {
@@ -29,20 +27,22 @@ const login = asyncHandler(async (req, res) => {
   isValidUser.refreshToken = refreshToken;
   isValidUser.save();
 
-  res.status(200).cookie("refreshToken", refreshToken, {
+  const option = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    path: "/",
+    domain: isProduction ? "chat-app-backend-4vgu.onrender.com" : "localhost",
+  };
+
+  res.status(200).cookie("refreshToken", refreshToken, {
+    ...option,
     maxAge: 7 * 24 * 60 * 60 * 1000,
-    path: "/"
   });
   res
     .cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      ...option,
       maxAge: 15 * 60 * 1000,
-       path: "/"
     })
     .json(new ApiResponse(200, "Login successful", { user, accessToken }));
 });
@@ -74,14 +74,19 @@ const refreshToken = asyncHandler(async (req, res) => {
 
   const accessToken = await authService.createAccessToken(refreshToken);
 
+  const option = {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    path: "/",
+    domain: isProduction ? "chat-app-backend-4vgu.onrender.com" : "localhost",
+  };
+
   res
     .status(200)
     .cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+     ...option,
       maxAge: 15 * 60 * 1000,
-       path: "/"
     })
     .json({
       success: true,
