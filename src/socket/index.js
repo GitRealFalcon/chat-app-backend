@@ -6,7 +6,7 @@ import { initRedisSubscriber } from "../redis/pubsub.js";
 export const initSocket = (httpServer) => {
   const io = new Server(httpServer, {
     cors: {
-      origin: ["http://localhost:5173","https://chat-application-frontend-woad.vercel.app"],
+      origin: ["http://localhost:5174 ","https://chat-application-frontend-woad.vercel.app","https://chat.realfalcon.in"],
       methods: ["GET", "POST"],
       credentials: true,
     },
@@ -15,6 +15,7 @@ export const initSocket = (httpServer) => {
   io.use(socketAuth);
   registerSocketEvents(io);
   initRedisSubscriber(io);
+  
 
   return io;
 };
