@@ -17,7 +17,16 @@ const getGroupMessages = asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse(200,"Group messages fetched successfully",messages));
 })
 
+const updateMessageStatus = asyncHandler(async(req, res)=>{
+    const userId = req.user?._id
+    const {peerId} = req.params
+    await messageService.updateMessageStatusService(peerId,userId)
+    res.status(200)
+    .json(new ApiResponse(200,"Message status update success"))
+})
+
 export default{
     getDirectMessages,
-    getGroupMessages
+    getGroupMessages,
+    updateMessageStatus
 }

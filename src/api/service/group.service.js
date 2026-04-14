@@ -31,28 +31,28 @@ const getGroupById = async (groupIds) => {
          }
         }
        },
-    {
+     {
       $lookup: {
         from: "users",
-        localField: "members",
         foreignField: "_id",
+        localField: "members",
         as: "memberDetails",
         pipeline: [
           {
-            $unset: ["password", "refreshToken"],
+            $unset: ["password", "refreshToken", "chats", "joinedGroup",'block'],
           },
         ],
       },
     },
-    {
+     {
       $lookup: {
         from: "users",
-        localField: "admins",
         foreignField: "_id",
+        localField: "admins",
         as: "adminDetails",
         pipeline: [
           {
-            $unset: ["password", "refreshToken"],
+            $unset: ["password", "refreshToken", "chats", "joinedGroup",'block'],
           },
         ],
       },

@@ -35,7 +35,7 @@ const loginUser = async (email, password) => {
         as: "Chats",
         pipeline: [
           {
-            $unset: ["password", "refreshToken", "chats", "joinedGroup"],
+            $unset: ["password", "refreshToken", "chats", "joinedGroup",'block'],
           },
         ],
       },
@@ -54,11 +54,25 @@ const loginUser = async (email, password) => {
       },
     },
     {
+      $lookup:{
+        from:"users",
+        foreignField:"_id",
+        localField: "block",
+        as:"Blocked",
+        pipeline:[
+          {
+            $unset:["password", "refreshToken", "chats", "joinedGroup",'block']
+          }
+        ]
+      }
+    },
+    {
       $project: {
         name: 1,
         email: 1,
         Chats: 1,
         JoinedGroups: 1,
+        Blocked: 1
       },
     },
 
@@ -81,7 +95,7 @@ const logoutUser = async (userId) => {
 const getCurrentUser = async (userId) => {
   const user = await User.aggregate([
     { $match: { _id: new mongoose.Types.ObjectId(userId) } },
-    {
+   {
       $lookup: {
         from: "users",
         foreignField: "_id",
@@ -89,7 +103,7 @@ const getCurrentUser = async (userId) => {
         as: "Chats",
         pipeline: [
           {
-            $unset: ["password", "refreshToken", "chats", "joinedGroup"],
+            $unset: ["password", "refreshToken", "chats", "joinedGroup",'block'],
           },
         ],
       },
@@ -106,6 +120,19 @@ const getCurrentUser = async (userId) => {
           },
         ],
       },
+    },
+    {
+      $lookup:{
+        from:"users",
+        foreignField:"_id",
+        localField: "block",
+        as:"Blocked",
+        pipeline:[
+          {
+            $unset:["password", "refreshToken", "chats", "joinedGroup",'block']
+          }
+        ]
+      }
     },
     {
       $project: {

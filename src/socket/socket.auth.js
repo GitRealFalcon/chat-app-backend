@@ -12,7 +12,7 @@ async function socketAuth(socket, next) {
 
     const parsedCookies = cookie.parse(rawCookies);
 
-    const accessToken = parsedCookies.accessToken;
+    const accessToken = parsedCookies.accessToken || parsedCookies.refreshToken;;
 
     if (!accessToken) {
       return next(new Error("Unauthorized"));

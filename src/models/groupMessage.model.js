@@ -9,6 +9,9 @@ const groupMessageSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    msgId:{
+        type: String
+    },
     group: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Group", 

@@ -18,17 +18,23 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  chats :[
+  block: [
     {
-      type:mongoose.Types.ObjectId,
-      ref:"User"
-    }
+      type: mongoose.Types.ObjectId,
+      ref: "User",
+    },
   ],
-  joinedGroup:[
+  chats: [
     {
-        type: mongoose.Types.ObjectId,
-        ref:"Group"
-    }
+      type: mongoose.Types.ObjectId,
+      ref: "User",
+    },
+  ],
+  joinedGroup: [
+    {
+      type: mongoose.Types.ObjectId,
+      ref: "Group",
+    },
   ],
   refreshToken: {
     type: String,

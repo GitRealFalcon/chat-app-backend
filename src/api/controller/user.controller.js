@@ -2,7 +2,6 @@ import ApiError from "../../utils/ApiError.js";
 import ApiResponse from "../../utils/ApiRespose.js";
 import asyncHandler from "../../utils/asyncHandler.js";
 import userService from "../service/user.service.js";
-import addConatactService from "../service/user.service.js";
 
 const getUserById = asyncHandler(async (req, res) => {
   const userId = req.params.userId;
@@ -22,14 +21,14 @@ const getOnlineUsers = asyncHandler(async (req, res) => {
   const onlineUsers = await userService.getOnlineUsers();
   res
     .status(200)
-    .json(new ApiResponse(200, "fetch online user sucssessfull", onlineUsers));
+    .json(new ApiResponse(200, "fetch online user successful", onlineUsers));
 });
 
 const addContact = asyncHandler(async (req, res) => {
   const userId = req.user._id;
   const { contact } = req.body;
 
-  const { success } = await userService.addConatactService({userId,contact})
+  const { success } = await userService.addContactService({ userId, contact });
 
   if (!success) {
     throw new ApiError(404, "Update error");
@@ -37,9 +36,37 @@ const addContact = asyncHandler(async (req, res) => {
 
   res.status(200).json(new ApiResponse(200, "update successfully"));
 });
+
+const blockContact = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+  const { contact } = req.body;
+
+  const response = await userService.blockContactService({ userId, contact });
+
+  if (!response) {
+    throw new ApiError(404, "Block error");
+  }
+
+  res.status(200).json(new ApiResponse(200, "Block successfully"));
+});
+
+const unBlockContact = asyncHandler(async (req, res)=>{
+   const userId = req.user._id;
+  const { contact } = req.body;
+
+  const response = await userService.unBlockContactService({ userId, contact });
+
+  if (!response) {
+    throw new ApiError(404, "unBlock error");
+  }
+
+  res.status(200).json(new ApiResponse(200, "unBlock successfully"));
+})
 export default {
   getUserById,
   searchUsersByName,
   getOnlineUsers,
   addContact,
+  blockContact,
+  unBlockContact
 };

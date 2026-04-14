@@ -12,7 +12,7 @@ const worker = new Worker(
   MESSAGE_QUEUE,
   async (job) => {
     
-    const { type, sender, text, receiver, group, ts } = job.data;
+    const { type, sender, text, receiver, group, ts, msgId} = job.data;
     
     if (type === "direct") {
       return await Message.create({
@@ -20,6 +20,7 @@ const worker = new Worker(
         receiver,
         text,
         ts,
+        msgId
       });
     }
 
@@ -29,6 +30,7 @@ const worker = new Worker(
         group,
         text,
         ts,
+        msgId
       });
     }
 

@@ -18,6 +18,9 @@ const messageSchema = new mongoose.Schema({
         enum: ["sent", "delivered", "read"],
         default: "sent",
     },
+    msgId:{
+        type: String
+    },
     ts: {
         type: Date,
         default: Date.now,

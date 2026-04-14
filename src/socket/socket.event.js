@@ -5,6 +5,7 @@ import typingHandler from "./socket.handlers/typing.handler.js";
 
 export const registerSocketEvents = (io) => {
   io.on("connection", (socket) => {
+    
     connectHandler(io, socket);
     directHandler(io, socket);
     groupHandler(io, socket);
