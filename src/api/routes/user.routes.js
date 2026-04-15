@@ -11,5 +11,8 @@ router.get("/onlineUser",authMiddleware,userController.getOnlineUsers)
 router.patch("/add",authMiddleware,userController.addContact)
 router.patch("/block",authMiddleware,userController.blockContact)
 router.patch("/unblock",authMiddleware,userController.unBlockContact)
+router.patch("/request/:reqId",authMiddleware,userController.friendRequest)
+router.patch("/accept/:reqId",authMiddleware,userController.acceptRequest)
+router.patch("/reject/:reqId",authMiddleware,userController.rejectRequest)
 
 export default router;

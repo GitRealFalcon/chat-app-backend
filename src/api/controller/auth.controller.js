@@ -10,7 +10,6 @@ const register = asyncHandler(async (req, res) => {
   if (!name || !email || !password) {
     throw new ApiError(400, "Name, email and password are required");
   }
-
   const user = await authService.registerUser(name, email, password);
 
   res.status(201).json(new ApiResponse(201, "User registered successfully"));
@@ -69,13 +68,10 @@ const Me = asyncHandler(async (req, res) => {
 
 const refreshToken = asyncHandler(async (req, res) => {
   const refreshToken = req.cookies.refreshToken;
-
   if (!refreshToken) {
     throw new ApiError(401, "No refresh Token");
   }
-
   const accessToken = await authService.createAccessToken(refreshToken);
-
   const option = {
     httpOnly: true,
     secure: isProduction,

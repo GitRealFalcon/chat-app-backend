@@ -18,6 +18,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  chatRequests:[
+    {
+      type: mongoose.Types.ObjectId,
+      ref: "User"
+    }
+  ],
   block: [
     {
       type: mongoose.Types.ObjectId,

@@ -1,7 +1,9 @@
+import mongoose from "mongoose";
 import ApiError from "../../utils/ApiError.js";
 import ApiResponse from "../../utils/ApiRespose.js";
 import asyncHandler from "../../utils/asyncHandler.js";
 import userService from "../service/user.service.js";
+
 
 const getUserById = asyncHandler(async (req, res) => {
   const userId = req.params.userId;
@@ -27,9 +29,7 @@ const getOnlineUsers = asyncHandler(async (req, res) => {
 const addContact = asyncHandler(async (req, res) => {
   const userId = req.user._id;
   const { contact } = req.body;
-
   const { success } = await userService.addContactService({ userId, contact });
-
   if (!success) {
     throw new ApiError(404, "Update error");
   }
@@ -40,7 +40,6 @@ const addContact = asyncHandler(async (req, res) => {
 const blockContact = asyncHandler(async (req, res) => {
   const userId = req.user._id;
   const { contact } = req.body;
-
   const response = await userService.blockContactService({ userId, contact });
 
   if (!response) {
@@ -50,23 +49,53 @@ const blockContact = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, "Block successfully"));
 });
 
-const unBlockContact = asyncHandler(async (req, res)=>{
-   const userId = req.user._id;
+const unBlockContact = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
   const { contact } = req.body;
-
   const response = await userService.unBlockContactService({ userId, contact });
 
   if (!response) {
     throw new ApiError(404, "unBlock error");
   }
-
   res.status(200).json(new ApiResponse(200, "unBlock successfully"));
+});
+
+const friendRequest = asyncHandler(async (req, res) => {
+  const reqId = req.params.reqId;
+  const userId = req.user?._id;
+
+  const response = await userService.requestService(reqId, userId);
+
+  res.status(200)
+  .json(new ApiResponse(200,"Friend request send"))
+});
+
+const acceptRequest = asyncHandler(async(req,res)=>{
+  const reqId = req.params.reqId;
+  const userId = req.user?._id;
+
+  const response = await userService.acceptRequestService(reqId,userId)
+  res.status(200)
+  .json(new ApiResponse(200,"Friend request accepted"))
 })
+
+const rejectRequest = asyncHandler(async(req,res)=>{
+  const reqId = req.params.reqId;
+  const userId = req.user?._id;
+
+  const response = await userService.rejectRequestService(reqId, userId)
+  res.status(200)
+  .json(new ApiResponse(200,"Friend request rejected"))
+})
+
 export default {
   getUserById,
   searchUsersByName,
   getOnlineUsers,
   addContact,
   blockContact,
-  unBlockContact
+  unBlockContact,
+  friendRequest,
+  acceptRequest,
+  rejectRequest
 };
