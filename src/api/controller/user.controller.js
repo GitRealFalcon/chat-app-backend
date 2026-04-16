@@ -60,34 +60,6 @@ const unBlockContact = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, "unBlock successfully"));
 });
 
-const friendRequest = asyncHandler(async (req, res) => {
-  const reqId = req.params.reqId;
-  const userId = req.user?._id;
-
-  const response = await userService.requestService(reqId, userId);
-
-  res.status(200)
-  .json(new ApiResponse(200,"Friend request send"))
-});
-
-const acceptRequest = asyncHandler(async(req,res)=>{
-  const reqId = req.params.reqId;
-  const userId = req.user?._id;
-
-  const response = await userService.acceptRequestService(reqId,userId)
-  res.status(200)
-  .json(new ApiResponse(200,"Friend request accepted"))
-})
-
-const rejectRequest = asyncHandler(async(req,res)=>{
-  const reqId = req.params.reqId;
-  const userId = req.user?._id;
-
-  const response = await userService.rejectRequestService(reqId, userId)
-  res.status(200)
-  .json(new ApiResponse(200,"Friend request rejected"))
-})
-
 export default {
   getUserById,
   searchUsersByName,
@@ -95,7 +67,5 @@ export default {
   addContact,
   blockContact,
   unBlockContact,
-  friendRequest,
-  acceptRequest,
-  rejectRequest
+  
 };

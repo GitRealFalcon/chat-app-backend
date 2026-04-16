@@ -26,8 +26,8 @@ const loginUser = async (email, password) => {
   }
 
   const user = await User.aggregate([
-    {$match:{_id:isValidUser._id}},
-     {
+    { $match: { _id: isValidUser._id } },
+    {
       $lookup: {
         from: "users",
         foreignField: "_id",
@@ -35,7 +35,13 @@ const loginUser = async (email, password) => {
         as: "Chats",
         pipeline: [
           {
-            $unset: ["password", "refreshToken", "chats", "joinedGroup",'block'],
+            $unset: [
+              "password",
+              "refreshToken",
+              "chats",
+              "joinedGroup",
+              "block",
+            ],
           },
         ],
       },
@@ -54,17 +60,23 @@ const loginUser = async (email, password) => {
       },
     },
     {
-      $lookup:{
-        from:"users",
-        foreignField:"_id",
+      $lookup: {
+        from: "users",
+        foreignField: "_id",
         localField: "block",
-        as:"Blocked",
-        pipeline:[
+        as: "Blocked",
+        pipeline: [
           {
-            $unset:["password", "refreshToken", "chats", "joinedGroup",'block']
-          }
-        ]
-      }
+            $unset: [
+              "password",
+              "refreshToken",
+              "chats",
+              "joinedGroup",
+              "block",
+            ],
+          },
+        ],
+      },
     },
     {
       $project: {
@@ -72,14 +84,12 @@ const loginUser = async (email, password) => {
         email: 1,
         Chats: 1,
         JoinedGroups: 1,
-        Blocked: 1
+        Blocked: 1,
       },
     },
+  ]);
 
-  ])
-
-
-  return {isValidUser,user:user[0]};
+  return { isValidUser, user: user[0] };
 };
 
 const logoutUser = async (userId) => {
@@ -95,7 +105,7 @@ const logoutUser = async (userId) => {
 const getCurrentUser = async (userId) => {
   const user = await User.aggregate([
     { $match: { _id: new mongoose.Types.ObjectId(userId) } },
-   {
+    {
       $lookup: {
         from: "users",
         foreignField: "_id",
@@ -103,7 +113,13 @@ const getCurrentUser = async (userId) => {
         as: "Chats",
         pipeline: [
           {
-            $unset: ["password", "refreshToken", "chats", "joinedGroup",'block'],
+            $unset: [
+              "password",
+              "refreshToken",
+              "chats",
+              "joinedGroup",
+              "block",
+            ],
           },
         ],
       },
@@ -122,24 +138,32 @@ const getCurrentUser = async (userId) => {
       },
     },
     {
-      $lookup:{
-        from:"users",
-        foreignField:"_id",
+      $lookup: {
+        from: "users",
+        foreignField: "_id",
         localField: "block",
-        as:"Blocked",
-        pipeline:[
+        as: "Blocked",
+        pipeline: [
           {
-            $unset:["password", "refreshToken", "chats", "joinedGroup",'block']
-          }
-        ]
-      }
+            $unset: [
+              "password",
+              "refreshToken",
+              "chats",
+              "joinedGroup",
+              "block",
+            ],
+          },
+        ],
+      },
     },
+
     {
       $project: {
         name: 1,
         email: 1,
         Chats: 1,
         JoinedGroups: 1,
+        Blocked: 1,
       },
     },
   ]);
@@ -149,25 +173,25 @@ const getCurrentUser = async (userId) => {
   return user[0];
 };
 
-const createAccessToken = async (refreshToken)=>{
-  try { 
-    const decodedToken = verifyRefreshToken(refreshToken)
-    const user = await User.findById(decodedToken.id)
-    const accessToken = user.generateAccessToken()
+const createAccessToken = async (refreshToken) => {
+  try {
+    const decodedToken = verifyRefreshToken(refreshToken);
+    const user = await User.findById(decodedToken.id);
+    const accessToken = user.generateAccessToken();
 
-    return accessToken
+    return accessToken;
   } catch (error) {
     if (error.name === "TokenExpiredError") {
-            throw new ApiError(401, "REFRESH_TOKEN_EXPIRED");
-        }
-        throw new ApiError(401, error.message || "Invalid Refresh Token");
+      throw new ApiError(401, "REFRESH_TOKEN_EXPIRED");
+    }
+    throw new ApiError(401, error.message || "Invalid Refresh Token");
   }
-}
+};
 
 export default {
   registerUser,
   loginUser,
   logoutUser,
   getCurrentUser,
-  createAccessToken
+  createAccessToken,
 };

@@ -7,9 +7,7 @@ const getUserById = async (userIds) => {
   const validUserIds = userIds.map((id) => new mongoose.Types.ObjectId(id));
   const user = await User.aggregate([
     { $match: { _id: { $in: validUserIds } } },
-    {$project:{
-      
-    }},
+    { $project: {} },
   ]);
   if (!user) {
     throw new ApiError(404, "User not found");
@@ -37,7 +35,6 @@ const getOnlineUsers = async () => {
   return onlineUsers;
 };
 
-
 const blockContactService = async (data) => {
   let { contact, userId } = data;
   let session = await mongoose.startSession();
@@ -45,19 +42,19 @@ const blockContactService = async (data) => {
   userId = new mongoose.Types.ObjectId(userId);
 
   try {
-    await session.withTransaction(async()=>{
+    await session.withTransaction(async () => {
       await User.updateOne(
-      { _id: userId },
-      { $addToSet: { block: contact } },
-      { session },
-    );
-    })
-    
-    return { success: true, message: "Contact Unblock success" }
+        { _id: userId },
+        { $addToSet: { block: contact } },
+        { session },
+      );
+    });
+
+    return { success: true, message: "Contact Unblock success" };
   } catch (error) {
-    throw new ApiError(500,"Block Contact Error")
-  }finally{
-    session.endSession()
+    throw new ApiError(500, "Block Contact Error");
+  } finally {
+    session.endSession();
   }
 };
 
@@ -68,98 +65,31 @@ const unBlockContactService = async (data) => {
   userId = new mongoose.Types.ObjectId(userId);
 
   try {
-    await session.withTransaction(async()=>{
+    await session.withTransaction(async () => {
       await User.updateOne(
-      { _id: userId },
-      { $pull: { block: contact } },
-      { session },
-    );
-    })
-    return { success: true, message: "Contact Unblock success" }
-  } catch (error) {
-     throw new ApiError(500,"unBlock Contact Error")
-  }finally{
-    session.endSession()
-  }
-};
-
-const requestService = async (reqId, userId) => {
-  const session = await mongoose.startSession();
-  try {
-   await session.withTransaction(async () => {
-       await User.updateOne(
-        { _id: reqId },
-        { $addToSet: { chatRequests: userId } },
+        { _id: userId },
+        { $pull: { block: contact } },
         { session },
       );
-      
     });
-
-    return { success: true, message: "Friend request send" }
+    return { success: true, message: "Contact Unblock success" };
   } catch (error) {
-    throw new ApiError(500, "Request send Error");
+    throw new ApiError(500, "unBlock Contact Error");
   } finally {
     session.endSession();
   }
 };
 
-const acceptRequestService = async (reqId, userId) => {
-  const session = await mongoose.startSession();
 
-  try {
-   await session.withTransaction(async () => {
-       await User.updateOne(
-        { _id: userId },
-        { $pull: { chatRequests: reqId } },
-        { session },
-      );
 
-       await User.updateOne(
-        {_id:reqId},
-        {$addToSet: {chats: userId}},
-        {session}
-      )
-      await User.updateOne(
-        {_id:userId},
-        {$addToSet: {chats:reqId}},
-        {session}
-      )
 
-      
-    });
-    return { success: true, message: "Friend request accepted" }
-  } catch (error) {
-    throw new ApiError(500,"Accept Friend Request Error")
-  }finally{
-    session.endSession()
-  }
-};
 
-const rejectRequestService = async(reqId,userId)=>{
-  const session = await mongoose.startSession()
-  try {
-    await session.withTransaction(async()=>{
-      await User.updateOne(
-        {_id:userId},
-        {$pull: {chatRequests:reqId}},
-        {session}
-      )
-    })
-     return { success: true, message: "Friend request rejected" }
-  } catch (error) {
-    throw new ApiError(500,"Reject Friend Request Error")
-  }finally{
-    session.endSession()
-  }
-}
+
 
 export default {
   getUserById,
   searchUsersByName,
   getOnlineUsers,
   blockContactService,
-  unBlockContactService,
-  requestService,
-  acceptRequestService,
-  rejectRequestService
+  unBlockContactService
 };

@@ -2,50 +2,48 @@ import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import JWT from "jsonwebtoken";
 
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true,
-    lowercase: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
-  chatRequests:[
-    {
-      type: mongoose.Types.ObjectId,
-      ref: "User"
-    }
-  ],
-  block: [
-    {
-      type: mongoose.Types.ObjectId,
-      ref: "User",
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: true,
     },
-  ],
-  chats: [
-    {
-      type: mongoose.Types.ObjectId,
-      ref: "User",
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      lowercase: true,
     },
-  ],
-  joinedGroup: [
-    {
-      type: mongoose.Types.ObjectId,
-      ref: "Group",
+    password: {
+      type: String,
+      required: true,
     },
-  ],
-  refreshToken: {
-    type: String,
+    block: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+    ],
+    chats: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    joinedGroup: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "Group",
+      },
+    ],
+    refreshToken: {
+      type: String,
+    },
   },
-});
+  { timestamps: true },
+);
 
 userSchema.pre("save", async function () {
   if (!this.isModified("password")) {
