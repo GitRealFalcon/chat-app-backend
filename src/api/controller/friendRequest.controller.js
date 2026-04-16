@@ -37,7 +37,7 @@ const cancelRequest = asyncHandler(async(req,res)=>{
 
   const response = await friendRequestService.cancelRequestService(reqId, userId)
   res.status(200)
-  .json(new ApiResponse(200,"Friend request rejected"))
+  .json(new ApiResponse(200,"Friend request canceled"))
 })
 
 const getRequests = asyncHandler(async(req,res)=>{
