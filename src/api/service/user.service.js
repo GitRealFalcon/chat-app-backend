@@ -35,17 +35,15 @@ const getOnlineUsers = async () => {
   return onlineUsers;
 };
 
-const blockContactService = async (data) => {
-  let { contact, userId } = data;
+const blockContactService = async (chatId,userId) => {
+  
   let session = await mongoose.startSession();
-  contact = new mongoose.Types.ObjectId(contact);
-  userId = new mongoose.Types.ObjectId(userId);
-
+  
   try {
     await session.withTransaction(async () => {
       await User.updateOne(
         { _id: userId },
-        { $addToSet: { block: contact } },
+        { $addToSet: { block: chatId } },
         { session },
       );
     });
@@ -58,17 +56,15 @@ const blockContactService = async (data) => {
   }
 };
 
-const unBlockContactService = async (data) => {
-  let { contact, userId } = data;
+const unBlockContactService = async (chatId,userId) => {
+  
   let session = await mongoose.startSession();
-  contact = new mongoose.Types.ObjectId(contact);
-  userId = new mongoose.Types.ObjectId(userId);
-
+ 
   try {
     await session.withTransaction(async () => {
       await User.updateOne(
         { _id: userId },
-        { $pull: { block: contact } },
+        { $pull: { block: chatId } },
         { session },
       );
     });
@@ -79,12 +75,6 @@ const unBlockContactService = async (data) => {
     session.endSession();
   }
 };
-
-
-
-
-
-
 
 export default {
   getUserById,

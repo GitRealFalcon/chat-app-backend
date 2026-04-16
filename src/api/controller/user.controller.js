@@ -26,37 +26,23 @@ const getOnlineUsers = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "fetch online user successful", onlineUsers));
 });
 
-const addContact = asyncHandler(async (req, res) => {
-  const userId = req.user._id;
-  const { contact } = req.body;
-  const { success } = await userService.addContactService({ userId, contact });
-  if (!success) {
-    throw new ApiError(404, "Update error");
-  }
-
-  res.status(200).json(new ApiResponse(200, "update successfully"));
-});
 
 const blockContact = asyncHandler(async (req, res) => {
   const userId = req.user._id;
-  const { contact } = req.body;
-  const response = await userService.blockContactService({ userId, contact });
+  const chatId = req.params.chatId
+  const response = await userService.blockContactService(chatId,userId);
 
-  if (!response) {
-    throw new ApiError(404, "Block error");
-  }
+ 
 
   res.status(200).json(new ApiResponse(200, "Block successfully"));
 });
 
 const unBlockContact = asyncHandler(async (req, res) => {
   const userId = req.user._id;
-  const { contact } = req.body;
-  const response = await userService.unBlockContactService({ userId, contact });
+  const chatId = req.params.chatId
+  const response = await userService.unBlockContactService(chatId,userId);
 
-  if (!response) {
-    throw new ApiError(404, "unBlock error");
-  }
+ 
   res.status(200).json(new ApiResponse(200, "unBlock successfully"));
 });
 
@@ -64,7 +50,6 @@ export default {
   getUserById,
   searchUsersByName,
   getOnlineUsers,
-  addContact,
   blockContact,
   unBlockContact,
   
