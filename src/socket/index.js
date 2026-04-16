@@ -10,6 +10,9 @@ export const initSocket = (httpServer) => {
       methods: ["GET", "POST"],
       credentials: true,
     },
+    pingInterval: 25000,
+    pingTimeout: 60000,
+    transports: ["websocket", "polling"],
   });
 
   io.use(socketAuth);
