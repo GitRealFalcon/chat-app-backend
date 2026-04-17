@@ -1,3 +1,4 @@
+// socketAuth.js
 import { verifyAccessToken } from "../utils/jwt.service.js";
 import { User } from "../models/user.model.js";
 import cookie from "cookie";
@@ -7,33 +8,33 @@ async function socketAuth(socket, next) {
     const rawCookies = socket.handshake.headers.cookie;
 
     if (!rawCookies) {
-      return next(new Error("Cookie not found"));
+      return next(new Error("UNAUTHORIZED"));
     }
 
-    const parsedCookies = cookie.parse(rawCookies);
-
-    const accessToken = parsedCookies.accessToken || parsedCookies.refreshToken;;
+    const { accessToken } = cookie.parse(rawCookies);
 
     if (!accessToken) {
-      return next(new Error("Unauthorized"));
+      return next(new Error("UNAUTHORIZED"));
     }
 
     const decoded = verifyAccessToken(accessToken);
 
-    if (!decoded) {
-      return next(new Error("Invalid Token"));
+    const user = await User.findById(decoded.id).select(
+      "-password -refreshToken"
+    );
+
+    if (!user) {
+      return next(new Error("UNAUTHORIZED"));
     }
 
-    const user = await User.findById(decoded.id).select(
-      "-password -refreshToken",
-    );
-    if (!user) {
-      return next(new Error("User not found"));
-    }
     socket.user = user;
     next();
   } catch (error) {
-    next(new Error("Invalid or expired token"));
+    if (error.name === "TokenExpiredError") {
+      return next(new Error("ACCESS_TOKEN_EXPIRED"));
+    }
+
+    return next(new Error("UNAUTHORIZED"));
   }
 }
 

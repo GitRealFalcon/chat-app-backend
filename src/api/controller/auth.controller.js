@@ -3,7 +3,7 @@ import authService from "../service/auth.service.js";
 import ApiError from "../../utils/ApiError.js";
 import ApiResponse from "../../utils/ApiRespose.js";
 
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = process.env.NODE_ENV === "production";
 
 const register = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -26,15 +26,18 @@ const login = asyncHandler(async (req, res) => {
   const accessToken = isValidUser.generateAccessToken();
   const refreshToken = isValidUser.generateRefreshToken();
   isValidUser.refreshToken = refreshToken;
-  isValidUser.save();
+  await isValidUser.save();
 
   const option = {
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? "none" : "lax",
     path: "/",
-    domain: isProduction ? "chat-app-backend-4vgu.onrender.com" : "localhost",
   };
+
+  if (isProduction) {
+    option.domain = "chat-app-backend-4vgu.onrender.com";
+  }
 
   res.status(200).cookie("refreshToken", refreshToken, {
     ...option,
@@ -51,10 +54,21 @@ const login = asyncHandler(async (req, res) => {
 const logout = asyncHandler(async (req, res) => {
   const userId = req.user._id;
   await authService.logoutUser(userId);
+
+  const option = {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    path: "/",
+  };
+
+  if (isProduction) {
+    option.domain = "chat-app-backend-4vgu.onrender.com";
+  }
   res
     .status(200)
-    .clearCookie("refreshToken")
-    .clearCookie("accessToken")
+    .clearCookie("refreshToken", option)
+    .clearCookie("accessToken", option)
     .json(new ApiResponse(200, "Logout successful"));
 });
 
@@ -77,13 +91,16 @@ const refreshToken = asyncHandler(async (req, res) => {
     secure: isProduction,
     sameSite: isProduction ? "none" : "lax",
     path: "/",
-    domain: isProduction ? "chat-app-backend-4vgu.onrender.com" : "localhost",
   };
+
+  if (isProduction) {
+    option.domain = "chat-app-backend-4vgu.onrender.com";
+  }
 
   res
     .status(200)
     .cookie("accessToken", accessToken, {
-     ...option,
+      ...option,
       maxAge: 15 * 60 * 1000,
     })
     .json({
