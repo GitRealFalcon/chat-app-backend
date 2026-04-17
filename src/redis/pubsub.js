@@ -1,10 +1,18 @@
-import { redisPub, redisSub } from "../config/redis.js";
+import { redisClient, redisPub, redisSub } from "../config/redis.js";
 import { REDIS_CHANNELS } from "../constants/redis.channels.js";
 import socketEvents from "../constants/socket.events.js";
 import { getUserSockets } from "./userSocket.store.js";
 import messageService from "../api/service/message.service.js";
 
-export const publishDirectMessage = async (payload) => {
+export const publishDirectMessage = async (payload,socket) => {
+  const {sender,receiver} = payload
+  const isBlocked =
+  await redisClient.sIsMember(`blocked:${sender}`, receiver) ||
+  await redisClient.sIsMember(`blockedBy:${sender}`, receiver);
+  if (isBlocked) {
+  socket.emit("error", "You are blocked");
+  return;
+}
   await redisPub.publish(
     REDIS_CHANNELS.DIRECT_MESSAGE,
     JSON.stringify(payload),

@@ -19,5 +19,7 @@ router.patch(
   authMiddleware,
   messageController.updateMessageStatus,
 );
+router.delete("/one/:msgId",authMiddleware)
+router.delete("/all/:chatId",authMiddleware)
 
 export default router;

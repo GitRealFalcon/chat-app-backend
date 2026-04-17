@@ -10,6 +10,6 @@ export default (io, socket) => {
       type: "direct",
       ts: payload.ts,
     };
-    await publishDirectMessage(message);
+    await publishDirectMessage(message,socket);
   });
 };

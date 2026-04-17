@@ -2,6 +2,7 @@ import { User } from "../../models/user.model.js";
 import ApiError from "../../utils/ApiError.js";
 import { getRedisOnlineUsers } from "../../redis/userSocket.store.js";
 import mongoose from "mongoose";
+import { redisClient } from "../../config/redis.js";
 
 const getUserById = async (userIds) => {
   const validUserIds = userIds.map((id) => new mongoose.Types.ObjectId(id));
@@ -35,19 +36,24 @@ const getOnlineUsers = async () => {
   return onlineUsers;
 };
 
-const blockContactService = async (chatId,userId) => {
-  
+const blockContactService = async (chatId, userId) => {
   let session = await mongoose.startSession();
-  
+
   try {
-    await session.withTransaction(async () => {
-      await User.updateOne(
+    const result = await session.withTransaction(async () => {
+      const user = await User.findOneAndUpdate(
         { _id: userId },
         { $addToSet: { block: chatId } },
-        { session },
+        { session, new: true },
       );
+      return user;
     });
-
+    const userIdStr = userId.toString()
+const chatIdStr = chatId.toString()
+    await Promise.all([
+      redisClient.sAdd(`blocked:${userIdStr}`, chatIdStr),
+      redisClient.sAdd(`blockedBy:${chatIdStr}`, userIdStr),
+    ]);
     return { success: true, message: "Contact Unblock success" };
   } catch (error) {
     throw new ApiError(500, "Block Contact Error");
@@ -56,10 +62,9 @@ const blockContactService = async (chatId,userId) => {
   }
 };
 
-const unBlockContactService = async (chatId,userId) => {
-  
+const unBlockContactService = async (chatId, userId) => {
   let session = await mongoose.startSession();
- 
+
   try {
     await session.withTransaction(async () => {
       await User.updateOne(
@@ -68,6 +73,14 @@ const unBlockContactService = async (chatId,userId) => {
         { session },
       );
     });
+    const userIdStr = userId.toString()
+const chatIdStr = chatId.toString()
+
+    await Promise.all([
+      redisClient.sRem(`blocked:${userIdStr}`, chatIdStr),
+      redisClient.sRem(`blockedBy:${chatIdStr}`, userIdStr),
+    ]);
+
     return { success: true, message: "Contact Unblock success" };
   } catch (error) {
     throw new ApiError(500, "unBlock Contact Error");
@@ -81,5 +94,5 @@ export default {
   searchUsersByName,
   getOnlineUsers,
   blockContactService,
-  unBlockContactService
+  unBlockContactService,
 };
