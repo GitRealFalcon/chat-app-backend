@@ -25,8 +25,26 @@ const updateMessageStatus = asyncHandler(async(req, res)=>{
     .json(new ApiResponse(200,"Message status update success"))
 })
 
+const deleteOne = asyncHandler(async(req,res)=>{
+    const msgId = req.params?.msgId
+    const result = await messageService.deleteOneService(msgId)
+
+    res.status(200)
+    .json(new ApiResponse(200,"Message delete success"))
+})
+const deleteAll = asyncHandler(async(req,res)=>{
+    const chatId = req.params?.chatId
+    const userId = req.user?._id
+    const result = await messageService.deleteAllService(chatId,userId)
+
+    res.status(200)
+    .json(new ApiResponse(200,"Messages delete success"))
+})
+
 export default{
     getDirectMessages,
     getGroupMessages,
-    updateMessageStatus
+    updateMessageStatus,
+    deleteOne,
+    deleteAll
 }
