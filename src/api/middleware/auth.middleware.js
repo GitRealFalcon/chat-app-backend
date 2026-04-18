@@ -9,15 +9,26 @@ const verifyToken = asyncHandler(async (req, res, next) => {
     const token =
       req.cookies?.accessToken ||
       req.headers.authorization?.replace("Bearer ", "");
-
+    
+    
+    
     if (!token) {
+      // If refreshToken exists → allow refresh flow
+      
+      if (req.cookies?.refreshToken) {
+        
+        throw new ApiError(401, "ACCESS_TOKEN_EXPIRED");
+
+      }
+       
+      // No refresh token → real logout
       throw new ApiError(401, "UNAUTHORIZED");
     }
 
     const decoded = verifyAccessToken(token);
 
     const user = await User.findById(decoded.id).select(
-      "-password -refreshToken"
+      "-password -refreshToken",
     );
 
     if (!user) {
@@ -27,7 +38,7 @@ const verifyToken = asyncHandler(async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    if (error.name === "TokenExpiredError") {
+    if (error.name === "TokenExpiredError" || req.cookies?.refreshToken) {
       throw new ApiError(401, "ACCESS_TOKEN_EXPIRED");
     }
 

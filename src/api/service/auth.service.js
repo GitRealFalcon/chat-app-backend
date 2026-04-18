@@ -189,7 +189,6 @@ const createAccessToken = async (refreshToken) => {
     const decodedToken = verifyRefreshToken(refreshToken);
     const user = await User.findById(decodedToken.id);
     const accessToken = user.generateAccessToken();
-    console.log("token refresh");
 
     return accessToken;
   } catch (error) {

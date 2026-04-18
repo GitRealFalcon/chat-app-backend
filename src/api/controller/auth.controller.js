@@ -109,9 +109,7 @@ const refreshToken = asyncHandler(async (req, res) => {
       ...option,
       maxAge: 15 * 60 * 1000,
     })
-    .json({
-      success: true,
-    });
+    .json(new ApiResponse(200,"Access Token refresh successfully"));
 });
 
 const verification = asyncHandler(async (req, res) => {

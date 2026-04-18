@@ -11,16 +11,22 @@ async function socketAuth(socket, next) {
       return next(new Error("UNAUTHORIZED"));
     }
 
-    const { accessToken } = cookie.parse(rawCookies);
+    const { accessToken, refreshToken } = cookie.parse(rawCookies);
 
     if (!accessToken) {
+      // If refreshToken exists → allow refresh flow
+      if (refreshToken) {
+        return next(new Error("ACCESS_TOKEN_EXPIRED"));
+      }
+
+      // No refresh token → real logout
       return next(new Error("UNAUTHORIZED"));
     }
 
     const decoded = verifyAccessToken(accessToken);
 
     const user = await User.findById(decoded.id).select(
-      "-password -refreshToken"
+      "-password -refreshToken",
     );
 
     if (!user) {
@@ -30,7 +36,7 @@ async function socketAuth(socket, next) {
     socket.user = user;
     next();
   } catch (error) {
-    if (error.name === "TokenExpiredError") {
+    if (error.name === "TokenExpiredError" || refreshToken) {
       return next(new Error("ACCESS_TOKEN_EXPIRED"));
     }
 
