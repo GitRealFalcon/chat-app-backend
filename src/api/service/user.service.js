@@ -26,7 +26,7 @@ const searchUsersByName = async (name, page = 1, limit = 10) => {
   return User.find({
     name: { $regex: safeName, $options: "i" },
   })
-    .select("-password -refreshToken -contacts -joinedGroup -chats -block")
+    .select("name email isVerified")
     .skip((page - 1) * limit)
     .limit(limit);
 };

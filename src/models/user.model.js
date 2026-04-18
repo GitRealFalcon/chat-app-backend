@@ -26,6 +26,16 @@ const userSchema = new mongoose.Schema(
         required: true,
       },
     ],
+    verificationCode: {
+      type: Number,
+    },
+    verificationExpiry: {
+      type: Date,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
     chats: [
       {
         type: mongoose.Types.ObjectId,

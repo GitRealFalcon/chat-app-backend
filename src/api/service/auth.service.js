@@ -2,16 +2,33 @@ import mongoose from "mongoose";
 import { User } from "../../models/user.model.js";
 import ApiError from "../../utils/ApiError.js";
 import { verifyRefreshToken } from "../../utils/jwt.service.js";
+import { sendVerificationCode } from "../../helpers/sendVerificationCode.js";
 
 const registerUser = async (name, email, password) => {
-  const existingUser = await User.findOne({ email });
-  if (existingUser) {
-    throw new ApiError(400, "User already Exists");
-  }
+  try {
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      throw new ApiError(400, "User already Exists");
+    }
 
-  const newUser = new User({ email, password, name });
-  await newUser.save();
-  return newUser;
+    const verificationCode = Math.floor(100000 + Math.random() * 900000);
+    const verificationExpiry = new Date(Date.now() + 5 * 60 * 1000);
+    const newUser = new User({
+      email,
+      password,
+      name,
+      verificationCode,
+      verificationExpiry,
+    });
+    await newUser.save();
+    const res = await sendVerificationCode(verificationCode, email, name);
+    if (!res.success) {
+      throw new ApiError(400, res.message);
+    }
+    return newUser;
+  } catch (error) {
+    throw new ApiError(500, error.message || "Registration Failed");
+  }
 };
 
 const loginUser = async (email, password) => {
@@ -35,13 +52,11 @@ const loginUser = async (email, password) => {
         as: "Chats",
         pipeline: [
           {
-            $unset: [
-              "password",
-              "refreshToken",
-              "chats",
-              "joinedGroup",
-              "block",
-            ],
+            $project: {
+              name: 1,
+              email: 1,
+              isVerified: 1
+            },
           },
         ],
       },
@@ -67,13 +82,11 @@ const loginUser = async (email, password) => {
         as: "Blocked",
         pipeline: [
           {
-            $unset: [
-              "password",
-              "refreshToken",
-              "chats",
-              "joinedGroup",
-              "block",
-            ],
+             $project: {
+              name: 1,
+              email: 1,
+              isVerified: 1
+            },
           },
         ],
       },
@@ -85,6 +98,7 @@ const loginUser = async (email, password) => {
         Chats: 1,
         JoinedGroups: 1,
         Blocked: 1,
+        isVerified: 1
       },
     },
   ]);
@@ -113,13 +127,11 @@ const getCurrentUser = async (userId) => {
         as: "Chats",
         pipeline: [
           {
-            $unset: [
-              "password",
-              "refreshToken",
-              "chats",
-              "joinedGroup",
-              "block",
-            ],
+             $project: {
+              name: 1,
+              email: 1,
+              isVerified: 1
+            },
           },
         ],
       },
@@ -145,13 +157,11 @@ const getCurrentUser = async (userId) => {
         as: "Blocked",
         pipeline: [
           {
-            $unset: [
-              "password",
-              "refreshToken",
-              "chats",
-              "joinedGroup",
-              "block",
-            ],
+             $project: {
+              name: 1,
+              email: 1,
+              isVerified: 1
+            },
           },
         ],
       },
@@ -164,6 +174,7 @@ const getCurrentUser = async (userId) => {
         Chats: 1,
         JoinedGroups: 1,
         Blocked: 1,
+        isVerified: 1
       },
     },
   ]);
@@ -178,6 +189,7 @@ const createAccessToken = async (refreshToken) => {
     const decodedToken = verifyRefreshToken(refreshToken);
     const user = await User.findById(decodedToken.id);
     const accessToken = user.generateAccessToken();
+    console.log("token refresh");
 
     return accessToken;
   } catch (error) {
@@ -188,10 +200,87 @@ const createAccessToken = async (refreshToken) => {
   }
 };
 
+const verificationCodeService = async (email, code) => {
+  try {
+    const isExist = await User.findOne({
+      email,
+    });
+
+    if (!isExist) {
+      throw new ApiError(404, "user not found");
+    }
+
+    if (isExist.isVerified) {
+      throw new ApiError(400, "Already verified");
+    }
+
+    const { verificationCode, verificationExpiry } = isExist;
+    if (String(verificationCode) !== code) {
+      throw new ApiError(400, "Invalid OTP");
+    }
+    if (Date.now() > verificationExpiry) {
+      throw new ApiError(410, "OTP expired");
+    }
+
+    isExist.set({
+      verificationCode: null,
+      verificationExpiry: null,
+      isVerified: true,
+    });
+
+    await isExist.save();
+
+    return {
+      success: true,
+      message: "OTP verified successfully",
+    };
+  } catch (error) {
+    throw new ApiError(500, error.message || "OTP Verification Failed");
+  }
+};
+
+const generateVerificationCodeService = async (email) => {
+  try {
+    const isExist = await User.findOne({
+      email,
+    });
+
+    if (!isExist) {
+      throw new ApiError(404, "user not found");
+    }
+
+    if (isExist.isVerified) {
+      throw new ApiError(400, "Already verified");
+    }
+
+    const { name } = isExist;
+
+    const verificationCode = Math.floor(100000 + Math.random() * 900000);
+    const verificationExpiry = new Date(Date.now() + 5 * 60 * 1000);
+
+    isExist.set({
+      verificationCode,
+      verificationExpiry,
+    });
+
+    await isExist.save();
+    const res = await sendVerificationCode(verificationCode, email, name);
+    if (!res.success) {
+      throw new ApiError(400, res.message);
+    }
+
+    return verificationExpiry;
+  } catch (error) {
+    throw new ApiError(500, error.message || "OTP generate Failed");
+  }
+};
+
 export default {
   registerUser,
   loginUser,
   logoutUser,
   getCurrentUser,
   createAccessToken,
+  verificationCodeService,
+  generateVerificationCodeService,
 };

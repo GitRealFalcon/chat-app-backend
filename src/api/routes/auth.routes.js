@@ -9,5 +9,7 @@ router.post("/login", authController.login);
 router.post("/logout", authMiddleware, authController.logout);
 router.get("/me", authMiddleware, authController.Me);
 router.post("/refresh",authController.refreshToken)
+router.post("/verification",authController.verification)
+router.patch("/generate/:email",authController.generateVerificationCode)
 
 export default router;

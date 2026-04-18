@@ -11,8 +11,14 @@ const register = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Name, email and password are required");
   }
   const user = await authService.registerUser(name, email, password);
-
-  res.status(201).json(new ApiResponse(201, "User registered successfully"));
+  const { verificationExpiry } = user;
+  res
+    .status(201)
+    .json(
+      new ApiResponse(201, "User registered successfully", {
+        verificationExpiry,
+      }),
+    );
 });
 
 const login = asyncHandler(async (req, res) => {
@@ -108,10 +114,36 @@ const refreshToken = asyncHandler(async (req, res) => {
     });
 });
 
+const verification = asyncHandler(async (req, res) => {
+  const { code, email } = req.body;
+
+  await authService.verificationCodeService(email, code);
+
+  res.status(200).json(new ApiResponse(200, "Account verified successfully"));
+});
+
+const generateVerificationCode = asyncHandler(async (req, res) => {
+  const email = req.params.email;
+
+  const verificationExpiry =
+    await authService.generateVerificationCodeService(email);
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, "OTP Send to email successfully", {
+        verificationExpiry,
+      }),
+    );
+});
+
+
 export default {
   register,
   login,
   logout,
   Me,
   refreshToken,
+  verification,
+  generateVerificationCode,
 };
