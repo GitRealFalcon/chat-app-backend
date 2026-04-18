@@ -23,7 +23,7 @@ export const otpEmail = (otp, name) => {
       
       <p>Hi ${name},</p>
       
-      <p>Your One-Time Password (OTP) has been successfully resent. Use the code below to continue:</p>
+      <p>Your One-Time Password (OTP) has been successfully sent. Use the code below to continue:</p>
       
       <!-- OTP Box -->
       <div style="text-align:center; margin:25px 0;">
