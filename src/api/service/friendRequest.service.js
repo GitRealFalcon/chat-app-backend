@@ -22,7 +22,9 @@ const requestService = async (reqId, userId) => {
 
     return { success: true, message: "Friend request send" };
   } catch (error) {
-    throw new ApiError(500, "Request send Error");
+    throw error instanceof ApiError
+      ? error
+      : new ApiError(500, "Request send Error");
   }
 };
 

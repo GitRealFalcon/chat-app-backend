@@ -20,18 +20,18 @@ export const redisClient = createClient({
 export const redisPub = redisClient.duplicate();
 export const redisSub = redisClient.duplicate();
 
+[redisClient, redisPub, redisSub].forEach((client) => {
+  client.on("error", (err) => {
+    console.error("❌ Redis Error:", err);
+  });
+});
+
 export const connectRedis = async () => {
   await Promise.all([
     redisClient.connect(),
     redisPub.connect(),
     redisSub.connect(),
   ]);
-
-  [redisClient, redisPub, redisSub].forEach((client) => {
-    client.on("error", (err) => {
-      console.error("❌ Redis Error:", err);
-    });
-  });
 
   console.log("✅ Redis connected");
 };

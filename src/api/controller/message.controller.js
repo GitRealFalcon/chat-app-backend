@@ -1,14 +1,7 @@
 import ApiResponse from "../../utils/ApiRespose.js";
 import messageService from "../service/message.service.js";
 import asyncHandler from "../../utils/asyncHandler.js";
-
-const getDirectMessages = asyncHandler(async (req, res) => {
-    const userId = req.user?._id
-    const {peerId} = req.params;
-    const page = parseInt(req.query.page) || 1;
-    const messages = await messageService.getDirectMessages(userId,peerId, page);
-    res.status(200).json(new ApiResponse(200,"Direct messages fetched successfully",messages));
-})
+import { publishMessageStatusUpdate } from "../../redis/pubsub.js";
 
 const getGroupMessages = asyncHandler(async (req, res) => {
     const {groupId} = req.params;
@@ -17,12 +10,34 @@ const getGroupMessages = asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse(200,"Group messages fetched successfully",messages));
 })
 
-const updateMessageStatus = asyncHandler(async(req, res)=>{
-    const userId = req.user?._id
-    const {peerId} = req.params
-    await messageService.updateMessageStatusService(peerId,userId)
-    res.status(200)
-    .json(new ApiResponse(200,"Message status update success"))
+const updateMessageStatusV2 = asyncHandler(async (req, res) => {
+    const userId = String(req.user?._id)
+    const { status, messageId, readUptoMessageId, conversationId } = req.body
+
+    let payload
+
+    if (status === "delivered") {
+        payload = await messageService.markMessageDeliveredService({
+            messageId,
+            userId,
+            conversationId,
+        })
+    }
+
+    if (status === "read") {
+        payload = await messageService.markMessageReadService({
+            messageId,
+            readUptoMessageId,
+            userId,
+            conversationId,
+        })
+    }
+
+    if (payload) {
+        await publishMessageStatusUpdate(payload)
+    }
+
+    res.status(200).json(new ApiResponse(200, "Message status update success", payload))
 })
 
 const deleteOne = asyncHandler(async(req,res)=>{
@@ -42,9 +57,8 @@ const deleteAll = asyncHandler(async(req,res)=>{
 })
 
 export default{
-    getDirectMessages,
     getGroupMessages,
-    updateMessageStatus,
+    updateMessageStatusV2,
     deleteOne,
     deleteAll
 }

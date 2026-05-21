@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node src/index.js",
     "worker": "node src/workers/message.worker.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "test": "node --test",
+    "backfill:conversation-ids": "node src/workers/backfillConversationIds.worker.js"
   },
   "author": "Mohd Naeem",
   "license": "ISC",
@@ -15,6 +17,7 @@
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.2",
     "bullmq": "^5.67.2",
+    "cloudinary": "^2.9.0",
     "cookie": "^1.1.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
@@ -22,6 +25,7 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.5",
+    "multer": "^2.1.1",
     "pino": "^10.3.0",
     "redis": "^5.10.0",
     "resend": "^6.12.0",

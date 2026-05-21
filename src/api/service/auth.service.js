@@ -27,7 +27,9 @@ const registerUser = async (name, email, password) => {
     }
     return newUser;
   } catch (error) {
-    throw new ApiError(500, error.message || "Registration Failed");
+    throw error instanceof ApiError
+      ? error
+      : new ApiError(500, error.message || "Registration Failed");
   }
 };
 
@@ -234,7 +236,9 @@ const verificationCodeService = async (email, code) => {
       message: "OTP verified successfully",
     };
   } catch (error) {
-    throw new ApiError(500, error.message || "OTP Verification Failed");
+    throw error instanceof ApiError
+      ? error
+      : new ApiError(500, error.message || "OTP Verification Failed");
   }
 };
 
@@ -270,7 +274,9 @@ const generateVerificationCodeService = async (email) => {
 
     return verificationExpiry;
   } catch (error) {
-    throw new ApiError(500, error.message || "OTP generate Failed");
+    throw error instanceof ApiError
+      ? error
+      : new ApiError(500, error.message || "OTP generate Failed");
   }
 };
 

@@ -13,11 +13,21 @@ export const publishDirectMessage = async (payload,socket) => {
   socket.emit("error", "You are blocked");
   return;
 }
+  const persistedMessage = await messageService.saveDirectMessage(payload);
+
   await redisPub.publish(
     REDIS_CHANNELS.DIRECT_MESSAGE,
+    JSON.stringify(persistedMessage),
+  );
+
+  return persistedMessage;
+};
+
+export const publishMessageStatusUpdate = async (payload) => {
+  await redisPub.publish(
+    REDIS_CHANNELS.MESSAGE_STATUS,
     JSON.stringify(payload),
   );
-  await messageService.saveDirectMessage(payload);
 };
 
 export const publishGroupMessage = async (payload) => {
@@ -43,17 +53,57 @@ export const initRedisSubscriber = (io) => {
       const senderSockets = await getUserSockets(sender);
       const receiverSockets = await getUserSockets(receiver);
 
-      // Emit to sender
+      const conversationPayload = {
+        conversationId: payload.conversationId,
+        sender,
+        receiver,
+        lastMessage: {
+          text: payload.text,
+          senderId: sender,
+          createdAt: payload.ts || new Date(),
+        },
+      };
+
       senderSockets.forEach((socketId) => {
+        io.to(socketId).emit(socketEvents.MESSAGE_SENT, payload);
+        io.to(socketId).emit(socketEvents.CONVERSATION_UPDATE, conversationPayload);
         io.to(socketId).emit(socketEvents.DIRECT_MESSAGE, payload);
       });
 
-      // Emit to receiver
       receiverSockets.forEach((socketId) => {
+        io.to(socketId).emit(socketEvents.MESSAGE_NEW, payload);
+        io.to(socketId).emit(socketEvents.CONVERSATION_UPDATE, conversationPayload);
         io.to(socketId).emit(socketEvents.DIRECT_MESSAGE, payload);
       });
     } catch (error) {
       console.error("❌ Redis DIRECT_MESSAGE error:", error);
+    }
+  });
+
+  redisSub.subscribe(REDIS_CHANNELS.MESSAGE_STATUS, async (message) => {
+    try {
+      const payload = JSON.parse(message);
+      const { sender, receiver, conversationId } = payload;
+
+      const [senderSockets, receiverSockets] = await Promise.all([
+        sender ? getUserSockets(sender) : Promise.resolve([]),
+        receiver ? getUserSockets(receiver) : Promise.resolve([]),
+      ]);
+
+      const targetSockets = [...senderSockets, ...receiverSockets];
+      targetSockets.forEach((socketId) => {
+        io.to(socketId).emit(socketEvents.MESSAGE_STATUS_UPDATE, payload);
+
+        if (conversationId) {
+          io.to(socketId).emit(socketEvents.CONVERSATION_UPDATE, {
+            conversationId,
+            status: payload.status,
+            updatedAt: payload.updatedAt,
+          });
+        }
+      });
+    } catch (error) {
+      console.error("❌ Redis MESSAGE_STATUS error:", error);
     }
   });
 
@@ -64,7 +114,7 @@ export const initRedisSubscriber = (io) => {
 
       io.to(`room:${groupId}`).emit(socketEvents.GROUP_MESSAGE, payload);
     } catch (error) {
-      console.error("❌ Redis GROUP_MESSAGE error:", err);
+      console.error("❌ Redis GROUP_MESSAGE error:", error);
     }
   });
 
@@ -79,7 +129,7 @@ export const initRedisSubscriber = (io) => {
         io.emit(socketEvents.USER_ONLINE, payload);
       }
     } catch (error) {
-      console.error("❌ Redis USER_STATUS error:", err);
+      console.error("❌ Redis USER_STATUS error:", error);
     }
   });
 
@@ -98,7 +148,7 @@ export const initRedisSubscriber = (io) => {
       }
 
       if (chatType === "group") {
-        io.to(`group:${chatId}`).emit(type, payload);
+        io.to(`room:${chatId}`).emit(type, payload);
       }
     } catch (err) {
       console.error("Typing Redis error:", err);

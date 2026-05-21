@@ -6,42 +6,67 @@ import { MESSAGE_QUEUE } from "../queues/message.queue.js";
 import {bullMqConnection} from "../config/bullMq.js";
 import DBConnect from "../config/mongo.js";
 
-DBConnect()
+const startWorker = async () => {
+  try {
+    await DBConnect();
 
-const worker = new Worker(
-  MESSAGE_QUEUE,
-  async (job) => {
-    
-    const { type, sender, text, receiver, group, ts, msgId} = job.data;
-    if (type === "direct") {
-      return await Message.create({
-        sender,
-        receiver,
-        text,
-        ts,
-        msgId
-      });
-    }
+    const worker = new Worker(
+      MESSAGE_QUEUE,
+      async (job) => {
+        const {
+          type,
+          sender,
+          text,
+          receiver,
+          group,
+          ts,
+          msgId,
+          clientMsgId,
+          conversationId,
+        } = job.data;
 
-    if (type === "group") {
-      return await GroupMessage.create({
-        sender,
-        group,
-        text,
-        ts,
-        msgId
-      });
-    }
+        if (type === "direct") {
+          return await Message.create({
+            sender,
+            receiver,
+            conversationId,
+            text,
+            ts,
+            msgId,
+            clientMsgId,
+          });
+        }
 
-    throw new Error("Unknown message type");
-  },
-  { connection: bullMqConnection }
-);
+        if (type === "group") {
+          return await GroupMessage.create({
+            sender,
+            group,
+            text,
+            ts,
+            msgId,
+          });
+        }
 
-worker.on("completed", (job) =>
-  console.log("✅ Job completed:", job.id)
-);
+        throw new Error("Unknown message type");
+      },
+      { connection: bullMqConnection },
+    );
 
-worker.on("failed", (job, err) =>
-  console.error("❌ Job failed:", job?.id, err)
-);
+    worker.on("completed", (job) =>
+      console.log("✅ Job completed:", job.id),
+    );
+
+    worker.on("failed", (job, err) =>
+      console.error("❌ Job failed:", job?.id, err),
+    );
+
+    worker.on("error", (err) => {
+      console.error("❌ Worker error:", err);
+    });
+  } catch (error) {
+    console.error("❌ Worker startup failed:", error);
+    process.exit(1);
+  }
+};
+
+startWorker();

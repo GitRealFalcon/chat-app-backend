@@ -5,6 +5,8 @@ import groupRoutes from "./api/routes/group.routes.js"
 import messageRoutes from "./api/routes/message.routes.js"
 import userRoutes from "./api/routes/user.routes.js"
 import friendRequestRouter from "./api/routes/friendRequest.routes.js"
+import uploadMediaRoutes from "./api/routes/uploadMedia.routes.js"
+import conversationRoutes from "./api/routes/conversation.routes.js"
 import cors from "cors"
 
 const app = express();
@@ -22,6 +24,8 @@ app.use("/api/v1/group",groupRoutes)
 app.use("/api/v1/message",messageRoutes)
 app.use("/api/v1/user",userRoutes)
 app.use("/api/v1/request",friendRequestRouter)
+app.use("/api/v1/media", uploadMediaRoutes)
+app.use("/api/v1/conversation", conversationRoutes)
 
 app.use((err, req, res, next) => {
    res.status(err.statusCode || 500).json({

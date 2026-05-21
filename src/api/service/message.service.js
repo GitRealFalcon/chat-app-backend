@@ -4,23 +4,12 @@ import { redisClient } from "../../config/redis.js";
 import { messageQueue } from "../../queues/message.queue.js";
 import mongoose from "mongoose";
 import ApiError from "../../utils/ApiError.js";
+import { Conversation } from "../../models/conversation.model.js";
+import {
+  createOrGetDirectConversation,
+} from "./conversation.service.js";
 
 const PAGE_SIZE = 20;
-const getDirectMessages = async (userId, peerId, page = 1) => {
-  const skip = (page - 1) * PAGE_SIZE;
-
-  const messages = await Message.find({
-    $or: [
-      { sender: userId, receiver: peerId },
-      { sender: peerId, receiver: userId },
-    ],
-  })
-    .skip(skip)
-    .limit(PAGE_SIZE)
-    .lean();
-
-  return messages;
-};
 
 const getGroupMessages = async (groupId, page = 1) => {
   const skip = (page - 1) * PAGE_SIZE;
@@ -41,18 +30,147 @@ const saveDirectMessage = async (payload) => {
     throw new Error("Message content cannot be empty");
   }
 
+  const { conversation } = await createOrGetDirectConversation(sender, receiver);
+
   const message = {
     sender,
     receiver,
+    conversationId: conversation._id,
     text,
     type,
     ts,
     msgId,
+    clientMsgId: msgId,
   };
 
-  const job = await messageQueue.add("presis-message", message);
+  await messageQueue.add("presis-message", message);
 
-  return message;
+  await Conversation.updateOne(
+    { _id: conversation._id },
+    {
+      $set: {
+        lastMessage: {
+          senderId: sender,
+          text,
+          type: "text",
+          createdAt: ts || new Date(),
+        },
+        lastMessageAt: ts || new Date(),
+      },
+      $inc: {
+        [`unreadCountByUser.${String(receiver)}`]: 1,
+      },
+    },
+  );
+
+  return {
+    ...message,
+    status: "sent",
+  };
+};
+
+const markMessageDeliveredService = async ({ messageId, userId, conversationId }) => {
+  if (!mongoose.Types.ObjectId.isValid(messageId)) {
+    throw new ApiError(400, "Invalid message id");
+  }
+
+  const now = new Date();
+  const updated = await Message.findOneAndUpdate(
+    {
+      _id: messageId,
+      receiver: userId,
+      status: { $in: ["sent", "sending"] },
+    },
+    {
+      $set: {
+        status: "delivered",
+        deliveredAt: now,
+      },
+    },
+    { new: true, lean: true },
+  );
+
+  return {
+    messageId,
+    conversationId: conversationId || updated?.conversationId,
+    sender: updated?.sender,
+    receiver: updated?.receiver,
+    status: "delivered",
+    updatedAt: now,
+  };
+};
+
+const markMessageReadService = async ({
+  messageId,
+  readUptoMessageId,
+  userId,
+  conversationId,
+}) => {
+  let convoId = conversationId;
+  const now = new Date();
+
+  if (messageId && mongoose.Types.ObjectId.isValid(messageId)) {
+    const updated = await Message.findOneAndUpdate(
+      {
+        _id: messageId,
+        receiver: userId,
+        status: { $in: ["sent", "delivered", "sending"] },
+      },
+      {
+        $set: {
+          status: "read",
+          readAt: now,
+        },
+      },
+      { new: true, lean: true },
+    );
+
+    convoId = convoId || updated?.conversationId;
+  }
+
+  if (readUptoMessageId && mongoose.Types.ObjectId.isValid(readUptoMessageId)) {
+    const anchor = await Message.findById(readUptoMessageId)
+      .select("_id conversationId createdAt")
+      .lean();
+
+    if (anchor) {
+      convoId = convoId || anchor.conversationId;
+
+      await Message.updateMany(
+        {
+          conversationId: anchor.conversationId,
+          receiver: userId,
+          createdAt: { $lte: anchor.createdAt },
+          status: { $in: ["sent", "delivered", "sending"] },
+        },
+        {
+          $set: {
+            status: "read",
+            readAt: now,
+          },
+        },
+      );
+    }
+  }
+
+  if (convoId && mongoose.Types.ObjectId.isValid(convoId)) {
+    await Conversation.updateOne(
+      { _id: convoId },
+      {
+        $set: {
+          [`unreadCountByUser.${String(userId)}`]: 0,
+        },
+      },
+    );
+  }
+
+  return {
+    messageId,
+    readUptoMessageId,
+    conversationId: convoId,
+    status: "read",
+    updatedAt: now,
+  };
 };
 
 const saveGroupMessage = async (payload) => {
@@ -74,32 +192,6 @@ const saveGroupMessage = async (payload) => {
   await messageQueue.add("presis-message", message);
 
   return message;
-};
-
-const updateMessageStatusService = async (peerId, userId) => {
-  const session = await mongoose.startSession();
-
-  try {
-    await session.withTransaction(async () => {
-      await Message.updateMany(
-        {
-          sender: peerId,
-          receiver: userId,
-          status: "sent",
-        },
-        {
-          $set: {
-            status: "read",
-          },
-        },
-        { session },
-      );
-    });
-  } catch (error) {
-    throw new ApiError(500, "Message Status update Error");
-  } finally {
-    await session.endSession();
-  }
 };
 
 const deleteOneService = async (msgId) => {
@@ -143,11 +235,11 @@ const deleteAllService = async (chatId, userId) => {
 };
 
 export default {
-  getDirectMessages,
   getGroupMessages,
   saveDirectMessage,
   saveGroupMessage,
-  updateMessageStatusService,
+  markMessageDeliveredService,
+  markMessageReadService,
   deleteOneService,
   deleteAllService
 };

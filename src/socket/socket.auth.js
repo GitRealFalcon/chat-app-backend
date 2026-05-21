@@ -36,7 +36,7 @@ async function socketAuth(socket, next) {
     socket.user = user;
     next();
   } catch (error) {
-    if (error.name === "TokenExpiredError" || refreshToken) {
+    if (error.name === "TokenExpiredError") {
       return next(new Error("ACCESS_TOKEN_EXPIRED"));
     }
 
